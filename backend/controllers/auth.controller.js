@@ -54,3 +54,37 @@ export const signup = async (req, res) => {
     res.status(400).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+export const login = async (req, res) => {
+
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    const isPasswordCorrect = await bcryptjs.compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ success: false, message: "Invalid password" });
+    }
+
+    generateTokenAndSetCookie(res, user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "User logged in successfully",
+      user: {
+        ...user._doc,
+        password: undefined
+      }
+    });
+  } catch (error) {
+    console.log("Error in Login controller", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+
+};
