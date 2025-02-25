@@ -3,6 +3,8 @@ import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from 'lucide-re
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
+import { signup } from "../redux/user/userSlice";
+import { useSelector, useDispatch } from "react-redux";
 
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +13,9 @@ const SignUpPage = () => {
     email: '',
     password: ''
   });
+
+  const dispatch = useDispatch();
+  const isSignInUp = useSelector((state) => state.user.isSignInUp);
 
   const validateForm = () => {
     if (!formData.fullName.trim()) return toast.error("Full name is required");
@@ -22,7 +27,15 @@ const SignUpPage = () => {
     return true;
   };
 
-  const handleSubmit = () => { };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const success = validateForm();
+
+    if (success === true) {
+      dispatch(signup(formData));
+    }
+  };
 
   return (
     <div className='min-h-screen grid lg:grid-cols-2'>
@@ -119,7 +132,16 @@ const SignUpPage = () => {
 
             {/* Submit Button */}
             <button type="submit" className="btn btn-primary w-full">
-              Create Account
+              {
+                isSignInUp ? (
+                  <>
+                    <Loader2 className='size-5 animate-spin' />
+                    Loading...
+                  </>
+                ) : (
+                  "Create Account"
+                )
+              }
             </button>
 
           </form>
@@ -143,7 +165,7 @@ const SignUpPage = () => {
         subtitle="Connect with friends, share moments, and stay in touch with your loved ones."
         mode="signup"
       />
-    </div>
+    </div >
   );
 };
 

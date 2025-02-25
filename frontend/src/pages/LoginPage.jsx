@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
+import { login } from "../redux/user/userSlice";
+import { useSelector, useDispatch } from "react-redux";
 
 
 const LoginPage = () => {
@@ -11,7 +13,22 @@ const LoginPage = () => {
     password: ""
   });
 
-  const handleSubmit = () => { };
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { isLoggingIn, currentUser } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    dispatch(login(formData, navigate));
+  };
 
   return (
     <div className='min-h-screen grid lg:grid-cols-2'>
@@ -95,7 +112,16 @@ const LoginPage = () => {
 
             {/* Submit Button */}
             <button type="submit" className="btn btn-primary w-full">
-              Log In
+              {
+                isLoggingIn ? (
+                  <>
+                    <Loader2 className='size-5 animate-spin' />
+                    Loading...
+                  </>
+                ) : (
+                  "Log In"
+                )
+              }
             </button>
 
           </form>
