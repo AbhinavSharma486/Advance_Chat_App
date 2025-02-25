@@ -53,7 +53,16 @@ const userSlice = createSlice({
       state.currentUser = null;
       state.error = null;
       state.loading = false;
-    }
+    },
+    setUser: (state, action) => {
+      state.currentUser = action.payload;
+    },
+    setCheckAuth: (state) => {
+      state.isCheckingAuth = true;
+    },
+    setCheckAuthComplete: (state) => {
+      state.isCheckingAuth = false;
+    },
   }
 });
 
@@ -65,6 +74,9 @@ export const {
   logInSuccess,
   logInFailure,
   logoutSuccess,
+  setUser,
+  setCheckAuth,
+  setCheckAuthComplete
 } = userSlice.actions;
 
 export const signup = (data) => async (dispatch) => {
@@ -114,6 +126,22 @@ export const logout = () => async (dispatch) => {
     toast.error(error.response.data.message);
   }
 };
+
+export const checkAuth = () => async (dispatch) => {
+  dispatch(setCheckAuth());
+
+  try {
+    const res = await axiosInstance.get("/auth/check");
+    dispatch(setUser(res.data));
+  } catch (error) {
+    console.error("Error in checkAuth", error); // Use console.error for errors
+    dispatch(setUser(null));
+  } finally {
+    dispatch(setCheckAuthComplete());
+  }
+};
+
+
 
 export default userSlice.reducer;
 
