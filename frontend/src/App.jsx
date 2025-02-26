@@ -11,19 +11,25 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import { checkAuth } from "./redux/user/userSlice";
 import Navbar from './components/Navbar';
+import SettingsPage from './pages/SettingsPage';
 
 const App = () => {
   const dispatch = useDispatch();
   const location = useLocation();
 
   const { currentUser, isCheckingAuth } = useSelector((state) => state.user);
+  const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
     // Don't run checkAuth on login or signup pages
-    if (location.pathname !== "/login" && location.pathname !== "/signup") {
+    if (location.pathname !== "/login" && location.pathname !== "/signup" && location.pathname !== "/settings") {
       dispatch(checkAuth());
     }
   }, [dispatch, location.pathname]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
 
   if (isCheckingAuth && !currentUser) {
@@ -35,12 +41,13 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div data-theme={theme}>
       <Navbar />
       <Routes>
         <Route path='/' element={currentUser ? <HomePage /> : <Navigate to="/login" />} />
         <Route path='/signup' element={!currentUser ? < SignUpPage /> : <Navigate to="/" />} />
         <Route path='/login' element={!currentUser ? <LoginPage /> : <Navigate to="/" />} />
+        <Route path='/settings' element={<SettingsPage />} />
       </Routes>
 
       <Toaster />
