@@ -85,19 +85,13 @@ export const signup = (data) => async (dispatch) => {
   try {
     const res = await axiosInstance.post("/auth/signup", data);
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Signup failed");
-    }
-
-    const responseData = await res.json();
-
-    dispatch(signUpSuccess(responseData));
+    dispatch(signUpSuccess(res.data));
 
     toast.success("Account created successfully");
   } catch (error) {
-    dispatch(signUpFailure(error.message));
-    toast.error(error.message);
+    const errorMessage = error.response?.data?.message || "Signup failed";
+    dispatch(signUpFailure(errorMessage));
+    toast.error(errorMessage);
   }
 };
 
@@ -106,24 +100,26 @@ export const login = (data, navigate) => async (dispatch) => {
 
   try {
     const res = await axiosInstance.post("/auth/login", data);
-
     dispatch(logInSuccess(res.data));
 
-    toast.success("Log In successfully");
+    toast.success("Logged In successfully");
     navigate("/");
   } catch (error) {
-    dispatch(logInFailure(error.message));
-    toast.error("Login Failed");
+    const errorMessage = error.response?.data?.message || "Login Failed";
+    dispatch(logInFailure(errorMessage));
+    toast.error(errorMessage);
   }
 };
 
-export const logout = () => async (dispatch) => {
+export const logout = (navigate) => async (dispatch) => {
   try {
     await axiosInstance.post("/auth/logout");
     dispatch(logoutSuccess());
     toast.success("Logged out successfully");
+    navigate("/login");
   } catch (error) {
-    toast.error(error.response.data.message);
+    const errorMessage = error.response?.data?.message || "Logout failed";
+    toast.error(errorMessage);
   }
 };
 
@@ -131,10 +127,11 @@ export const checkAuth = () => async (dispatch) => {
   dispatch(setCheckAuth());
 
   try {
-    const res = await axiosInstance.get("/auth/check");
+    const res = await axiosInstance.get("/auth/check", { withCredentials: true });
     dispatch(setUser(res.data));
   } catch (error) {
-    console.error("Error in checkAuth", error); // Use console.error for errors
+    const errorMessage = error.response?.data?.message || "Check auth failed";
+    console.error("Error in checkAuth", errorMessage);
     dispatch(setUser(null));
   } finally {
     dispatch(setCheckAuthComplete());
