@@ -22,7 +22,7 @@ const App = () => {
 
   useEffect(() => {
     // Don't run checkAuth on login or signup pages
-    if (location.pathname !== "/login" && location.pathname !== "/signup" && location.pathname !== "/settings") {
+    if (location.pathname !== "/login" && location.pathname !== "/signup" && location.pathname !== "/settings" && location.pathname !== "/google") {
       dispatch(checkAuth());
     }
   }, [dispatch, location.pathname]);

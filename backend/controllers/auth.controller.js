@@ -99,11 +99,55 @@ export const logout = async (req, res) => {
   }
 };
 
-export const checkAuth = (req, res) => {
+export const checkAuth = async (req, res) => {
   try {
-    res.status(200).json(req.user);
+    // Ensure the user is attached by middleware
+    if (!req.user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user: req.user });
   } catch (error) {
     console.log("Error in check auth controller", error.message);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const google = async (req, res) => {
+  const { email, name, googlePhotoUrl } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+
+      const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+
+      user = new User({
+        fullName: name,
+        email,
+        password: hashedPassword,
+        profilePicture: googlePhotoUrl,
+      });
+
+      await user.save();
+    }
+
+    // Generate token and set cookie
+    generateTokenAndSetCookie(res, user._id);
+
+    const { password, ...rest } = user._doc;
+
+    res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      user: rest
+    });
+  } catch (error) {
+    console.log("Error in google controller", error);
+    res.status(400).json({ success: false, message: "Internal Server Error" });
   }
 };

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
 import { signup } from "../redux/user/userSlice";
 import { useSelector, useDispatch } from "react-redux";
+import OAuth from "../components/OAuth";
 
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,11 +42,11 @@ const SignUpPage = () => {
     <div className='min-h-screen grid lg:grid-cols-2'>
 
       {/* LEFT SIDE */}
-      <div className="flex flex-col justify-center items-center p-6 sm:p-12">
+      <div className="flex flex-col justify-center items-center p-6 sm:p-12 mt-5">
 
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-1">
           {/* LOGO */}
-          <div className="text-center mb-8">
+          <div className="text-center">
             <div className="flex flex-col items-center gap-2 group">
               <div
                 className="size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
@@ -58,7 +59,7 @@ const SignUpPage = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className='space-y-6'>
+          <form onSubmit={handleSubmit} className='space-y-3'>
 
             {/* FullName */}
             <div className="form-control">
@@ -71,7 +72,7 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type="text"
-                  className={`input input-bordered w-full pl-10`}
+                  className={`input input-bordered w-full pl-10 rounded-full`}
                   placeholder='Jhon Doe'
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -90,7 +91,7 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type="email"
-                  className={`input input-bordered w-full pl-10`}
+                  className={`input input-bordered w-full pl-10 rounded-full`}
                   placeholder='you@gmail.com'
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -109,7 +110,7 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className={`input input-bordered w-full pl-10`}
+                  className={`input input-bordered w-full pl-10 rounded-full`}
                   placeholder='••••••••'
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -131,18 +132,25 @@ const SignUpPage = () => {
             </div>
 
             {/* Submit Button */}
-            <button type="submit" className="btn btn-primary w-full">
-              {
-                isSignInUp ? (
-                  <>
-                    <Loader2 className='size-5 animate-spin' />
-                    Loading...
-                  </>
-                ) : (
-                  "Create Account"
-                )
-              }
-            </button>
+            <div className='flex justify-center'>
+              <button type="submit" className="btn btn-primary w-full mt-1 rounded-full">
+                {
+                  isSignInUp ? (
+                    <>
+                      <Loader2 className='size-5 animate-spin' />
+                      Loading...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )
+                }
+              </button>
+            </div>
+
+            {/* OAuth Google Button  */}
+            <div className="flex justify-center">
+              <OAuth />
+            </div>
 
           </form>
 

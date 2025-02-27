@@ -128,10 +128,15 @@ export const checkAuth = () => async (dispatch) => {
 
   try {
     const res = await axiosInstance.get("/auth/check", { withCredentials: true });
-    dispatch(setUser(res.data));
+
+    if (res.data?.user) {
+      dispatch(setUser(res.data.user)); // Ensure `user` is extracted correctly
+    } else {
+      console.warn("Warning: checkAuth response missing user data", res.data);
+      dispatch(setUser(null));
+    }
   } catch (error) {
-    const errorMessage = error.response?.data?.message || "Check auth failed";
-    console.error("Error in checkAuth", errorMessage);
+    console.error("Error in checkAuth", error.response?.data || error.message);
     dispatch(setUser(null));
   } finally {
     dispatch(setCheckAuthComplete());
