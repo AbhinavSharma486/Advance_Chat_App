@@ -101,12 +101,13 @@ export const logout = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
   try {
-    // Ensure the user is attached by middleware
-    if (!req.user) {
+    const user = await User.findById(req.user).select("-password");
+
+    if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.status(200).json({ success: true, user: req.user });
+    res.status(200).json({ success: true, user });
   } catch (error) {
     console.log("Error in check auth controller", error.message);
     res.status(500).json({ message: "Internal server error" });
@@ -130,7 +131,10 @@ export const google = async (req, res) => {
         fullName: name,
         email,
         password: hashedPassword,
-        profilePicture: googlePhotoUrl,
+        profilePic: googlePhotoUrl,
+        isVerified: true,
+        verificationToken: null,
+        verificationTokenExpiresAt: null
       });
 
       await user.save();
