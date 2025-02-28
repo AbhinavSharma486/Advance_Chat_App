@@ -35,6 +35,8 @@ export default function OAuth() {
         dispatch(logInSuccess(data));
         navigate("/");
       }
+
+      toast.success("Google sign-in successful");
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Google sign-in failed";
       dispatch(logInFailure(errorMessage));

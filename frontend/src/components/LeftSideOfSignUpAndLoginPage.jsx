@@ -11,7 +11,7 @@ const bounceTransition = {
 
 
 const LeftSideOfSignUpAndLoginPage = ({ title, subtitle, mode }) => {
-  const imageSrc = mode === "login" ? "/login.svg" : "/sign-up-animate.svg";
+  const imageSrc = mode === "login" ? "/login.svg" : "/sign-up.svg";
 
   return (
     <div className="hidden lg:flex items-center justify-center bg-base-200 p-12">
