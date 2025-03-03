@@ -2,6 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../../lib/axios";
 
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5001/api/auth" : "/api/auth";
+
+
 const initialState = {
   currentUser: null,
   error: null,
@@ -63,6 +66,30 @@ const userSlice = createSlice({
     setCheckAuthComplete: (state) => {
       state.isCheckingAuth = false;
     },
+    forgotPasswordStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    forgotPasswordSuccess: (state) => {
+      state.loading = false;
+      state.error = null;
+    },
+    forgotPasswordFailure: (state) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    resetPasswordStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    resetPasswordSuccess: (state) => {
+      state.loading = false;
+      state.error = null;
+    },
+    resetPasswordFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    }
   }
 });
 
@@ -76,7 +103,13 @@ export const {
   logoutSuccess,
   setUser,
   setCheckAuth,
-  setCheckAuthComplete
+  setCheckAuthComplete,
+  forgotPasswordStart,
+  forgotPasswordSuccess,
+  forgotPasswordFailure,
+  resetPasswordStart,
+  resetPasswordSuccess,
+  resetPasswordFailure
 } = userSlice.actions;
 
 export const signup = (data) => async (dispatch) => {
@@ -143,7 +176,37 @@ export const checkAuth = () => async (dispatch) => {
   }
 };
 
+export const forgotPassword = (email) => async (dispatch) => {
+  dispatch(forgotPasswordStart());
+
+  try {
+    await axiosInstance.post(`${API_URL}/forget-password`, { email });
+    dispatch(forgotPasswordSuccess());
+    toast.success("Password reset link sent to your email");
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Password reset failed";
+    dispatch(forgotPasswordFailure(errorMessage));
+    toast.error(errorMessage);
+  }
+};
+
+// New resetPassword action
+export const resetPassword = (token, password, navigate) => async (dispatch) => {
+  dispatch(resetPasswordStart());
+
+  try {
+    const cleanToken = token.replace(/}$/, ''); // Remove any `{` or `}`
+    console.log("Clean Token: ", cleanToken);
+    await axiosInstance.post(`${API_URL}/reset-password/${cleanToken}`, { password });
+    dispatch(resetPasswordSuccess());
+    toast.success("Password has been successfully reset");
+    navigate("/");
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Password reset failed";
+    dispatch(resetPasswordFailure(errorMessage));
+    toast.error(errorMessage);
+  }
+};
 
 
 export default userSlice.reducer;
-

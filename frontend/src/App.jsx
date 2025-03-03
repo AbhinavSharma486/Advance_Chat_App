@@ -12,6 +12,8 @@ import LoginPage from './pages/LoginPage';
 import { checkAuth } from "./redux/user/userSlice";
 import Navbar from './components/Navbar';
 import SettingsPage from './pages/SettingsPage';
+import ForgetPasswordPage from './pages/ForgetPassword';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -47,6 +49,8 @@ const App = () => {
         <Route path='/' element={currentUser ? <HomePage /> : <Navigate to="/login" />} />
         <Route path='/signup' element={!currentUser ? < SignUpPage /> : <Navigate to="/" />} />
         <Route path='/login' element={!currentUser ? <LoginPage /> : <Navigate to="/" />} />
+        <Route path='/forget-password' element={!currentUser ? <ForgetPasswordPage /> : <Navigate to="/" />} />
+        <Route path='/reset-password/:token' element={!currentUser ? <ResetPasswordPage /> : <Navigate to="/" />} />
         <Route path='/settings' element={<SettingsPage />} />
       </Routes>
 
