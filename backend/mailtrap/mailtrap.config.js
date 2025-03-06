@@ -1,7 +1,7 @@
 import { MailtrapClient } from "mailtrap";
 import dotenv from "dotenv";
-
 dotenv.config();
+
 
 export const mailtrapClient = new MailtrapClient({
   endpoint: process.env.MAILTRAP_ENDPOINT,
@@ -9,6 +9,6 @@ export const mailtrapClient = new MailtrapClient({
 });
 
 export const sender = {
-  email: "hello@demomailtrap.com",
+  email: "hello@demomailtrap.co",
   name: "Chatify",
 };

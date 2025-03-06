@@ -14,6 +14,7 @@ import Navbar from './components/Navbar';
 import SettingsPage from './pages/SettingsPage';
 import ForgetPasswordPage from './pages/ForgetPassword';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -52,6 +53,7 @@ const App = () => {
         <Route path='/forget-password' element={!currentUser ? <ForgetPasswordPage /> : <Navigate to="/" />} />
         <Route path='/reset-password/:token' element={!currentUser ? <ResetPasswordPage /> : <Navigate to="/" />} />
         <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/verify-email' element={!currentUser ? <EmailVerificationPage /> : <Navigate to="/" />} />
       </Routes>
 
       <Toaster />

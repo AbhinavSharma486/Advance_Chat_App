@@ -19,7 +19,9 @@ const LeftSideOfSignUpAndLoginPage = ({ title, subtitle, mode }) => {
           ? "/forget-password.svg"
           : mode === "reset-password"
             ? "/reset-password.svg"
-            : "";
+            : mode === "otp"
+              ? "/otp.svg"
+              : "";
 
   return (
     <div className="hidden lg:flex flex-col items-center justify-center bg-base-200 p-12">

@@ -26,7 +26,7 @@ const userSlice = createSlice({
       state.isSignInUp = true;
     },
     signUpSuccess: (state, action) => {
-      state.currentUser = action.payload;
+      state.currentUser = null;
       state.loading = false;
       state.error = null;
       state.isSignInUp = false;
@@ -89,7 +89,20 @@ const userSlice = createSlice({
     resetPasswordFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
-    }
+    },
+    verifyEmailStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    verifyEmailSuccess: (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.currentUser = action.payload;
+    },
+    verifyEmailFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
   }
 });
 
@@ -109,21 +122,39 @@ export const {
   forgotPasswordFailure,
   resetPasswordStart,
   resetPasswordSuccess,
-  resetPasswordFailure
+  resetPasswordFailure,
+  verifyEmailStart,
+  verifyEmailSuccess,
+  verifyEmailFailure
 } = userSlice.actions;
 
-export const signup = (data) => async (dispatch) => {
+export const signup = (data, navigate) => async (dispatch) => {
   dispatch(signUpStart());
 
   try {
     const res = await axiosInstance.post("/auth/signup", data);
 
     dispatch(signUpSuccess(res.data));
-
-    toast.success("Account created successfully");
+    navigate("/verify-email");
+    toast.success("OTP has been sent to your email");
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Signup failed";
     dispatch(signUpFailure(errorMessage));
+    toast.error(errorMessage);
+  }
+};
+
+export const verifyEmail = (code, navigate) => async (dispatch) => {
+  dispatch(verifyEmailStart());
+
+  try {
+    const response = await axiosInstance.post(`${API_URL}/verify-email`, { code });
+    dispatch(verifyEmailSuccess(response.data.user));
+    navigate("/");
+    toast.success("Account created successfully");
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Error in verifying email";
+    dispatch(verifyEmailFailure(errorMessage));
     toast.error(errorMessage);
   }
 };
