@@ -1,6 +1,7 @@
 import bcryptjs from "bcryptjs";
 import User from "../models/user.model.js";
 import crypto from "crypto";
+import cloudinary from "../lib/cloudinary.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email.js";
 
@@ -261,5 +262,44 @@ export const resetPassword = async (req, res) => {
   } catch (error) {
     console.log("Error in resetPassword controller", error);
     res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic, fullName } = req.body;
+    const userId = req.user.id;
+
+    if (!profilePic && !fullName) {
+      return res.status(400).json({ message: "At least one field is required to update" });
+    }
+
+    let updateData = {};
+
+    if (profilePic) {
+      const uploadResponse = await cloudinary.uploader.upload(profilePic);
+      updateData.profilePic = uploadResponse.secure_url;
+    }
+
+    if (fullName) {
+      updateData.fullName = fullName;
+    }
+
+    const updateUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+    res.status(200).json(updateUser);
+  } catch (error) {
+    console.log("Error in update profile pic controller", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.userId);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log("Error in delete user controller", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

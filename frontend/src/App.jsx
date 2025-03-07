@@ -15,6 +15,7 @@ import SettingsPage from './pages/SettingsPage';
 import ForgetPasswordPage from './pages/ForgetPassword';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -54,6 +55,7 @@ const App = () => {
         <Route path='/reset-password/:token' element={!currentUser ? <ResetPasswordPage /> : <Navigate to="/" />} />
         <Route path='/settings' element={<SettingsPage />} />
         <Route path='/verify-email' element={!currentUser ? <EmailVerificationPage /> : <Navigate to="/" />} />
+        <Route path='/profile' element={currentUser ? <ProfilePage /> : <Navigate to="/" />} />
       </Routes>
 
       <Toaster />
