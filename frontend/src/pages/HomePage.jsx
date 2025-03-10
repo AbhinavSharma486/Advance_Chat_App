@@ -5,7 +5,6 @@ import Sidebar from '../components/Sidebar';
 import { useDispatch, useSelector } from "react-redux";
 
 const HomePage = () => {
-  const dispatch = useDispatch();
   const { selectedUser } = useSelector((state) => state.chat);
 
   return (
