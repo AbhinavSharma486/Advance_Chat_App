@@ -8,7 +8,9 @@ const Sidebar = () => {
   const dispatch = useDispatch();
 
   const { users, selectedUser, isUsersLoading } = useSelector((state) => state.chat);
-  const { onlineUsers = [] } = useSelector((state) => state.user?.onlineUsers) || [];
+  const { onlineUsers = [] } = useSelector((state) => state.user || {});
+  console.log({ onlineUsers });
+
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
@@ -39,7 +41,7 @@ const Sidebar = () => {
             />
             <span className="text-sm">Show online only</span>
           </label>
-          <span className="text-sm text-zinc-500">({onlineUsers.length} online)</span>
+          <span className="text-sm text-zinc-500">({onlineUsers.length - 1} online)</span>
         </div>
       </div>
 

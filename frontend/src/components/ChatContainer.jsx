@@ -2,28 +2,45 @@ import React, { useEffect, useRef } from 'react';
 import ChatHeader from './ChatHeader';
 import MessageInput from "./MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
-import { getMessages } from '../redux/message/chatSlice';
+import { getMessages, subscribeToMessages, unsubscribeFromMessages } from '../redux/message/chatSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatMessageTime } from '../lib/util.js';
 
 const ChatContainer = () => {
   const dispatch = useDispatch();
 
-  const { messages, isMessagesLoading, selectedUser } = useSelector((state) => state.chat);
+  const { messages = [], isMessagesLoading, selectedUser } = useSelector((state) => state.chat);
   const { currentUser } = useSelector((state) => state.user);
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    if (selectedUser) {
+    if (selectedUser?._id) {
       dispatch(getMessages(selectedUser._id));
+
+      dispatch(unsubscribeFromMessages());
+      dispatch(subscribeToMessages(selectedUser._id));
     }
+
+    return () => {
+      dispatch(unsubscribeFromMessages());
+    };
+
   }, [selectedUser, dispatch]);
+
+  // 🔹 NEW: Subscribe on page reload when currentUser is available
+  useEffect(() => {
+    if (currentUser?._id) {
+      dispatch(subscribeToMessages());
+    }
+
+    return () => {
+      dispatch(unsubscribeFromMessages());
+    };
+  }, [currentUser, dispatch]);
 
 
   useEffect(() => {
-    if (messageEndRef.current && messages) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   if (isMessagesLoading) {
@@ -46,7 +63,7 @@ const ChatContainer = () => {
             <div
               key={message._id}
               className={`chat ${message.senderId === currentUser._id ? "chat-end" : "chat-start"}`}
-              ref={index === messages.length - 1 ? messageEndRef : null}
+            // ref={index === messages.length - 1 ? messageEndRef : null}
             >
               <div className="chat-image avatar">
                 <div className="size-10 rounded-full border">
@@ -80,6 +97,7 @@ const ChatContainer = () => {
             </div>
           ))
         }
+        <div ref={messageEndRef}></div>
       </div>
 
       <MessageInput />

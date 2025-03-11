@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from 'react';
-import { Loader } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { useLocation } from "react-router-dom";
 
 import SignUpPage from './pages/SignUpPage';
@@ -21,31 +21,32 @@ const App = () => {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const { currentUser, isCheckingAuth } = useSelector((state) => state.user);
+  const { currentUser, isCheckingAuth, onlineUsers } = useSelector((state) => state.user);
+  console.log({ onlineUsers });
+
   const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
-    // Don't run checkAuth on login or signup pages
-    if (location.pathname !== "/login" && location.pathname !== "/signup" && location.pathname !== "/settings" && location.pathname !== "/google") {
+    if (!["/login", "/signup", "/settings", "/google"].includes(location.pathname)) {
       dispatch(checkAuth());
     }
-  }, [dispatch, location.pathname]);
+  }, [dispatch, location.pathname, checkAuth]);
+
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-
   if (isCheckingAuth && !currentUser) {
     return (
-      <div className="flex item-center justify-center h-screen">
-        <Loader className='size-10 animate-spin' />
+      <div className="flex items-center justify-center h-screen">
+        <LoaderCircle className='size-10 animate-spin' />
       </div>
     );
   }
 
   return (
-    <div data-theme={theme}>
+    <div>
       <Navbar />
       <Routes>
         <Route path='/' element={currentUser ? <HomePage /> : <Navigate to="/login" />} />
@@ -53,7 +54,7 @@ const App = () => {
         <Route path='/login' element={!currentUser ? <LoginPage /> : <Navigate to="/" />} />
         <Route path='/forget-password' element={!currentUser ? <ForgetPasswordPage /> : <Navigate to="/" />} />
         <Route path='/reset-password/:token' element={!currentUser ? <ResetPasswordPage /> : <Navigate to="/" />} />
-        <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/settings' element={currentUser ? <SettingsPage /> : <Navigate to="/login" />} />
         <Route path='/verify-email' element={!currentUser ? <EmailVerificationPage /> : <Navigate to="/" />} />
         <Route path='/profile' element={currentUser ? <ProfilePage /> : <Navigate to="/" />} />
       </Routes>

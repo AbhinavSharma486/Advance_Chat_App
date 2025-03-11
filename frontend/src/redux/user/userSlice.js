@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../../lib/axios";
+import { io } from "socket.io-client";
 
-const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5001/api/auth" : "/api/auth";
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
 
 const initialState = {
@@ -14,6 +15,7 @@ const initialState = {
   isUpdatingProfile: false,
   isCheckingAuth: true,
   onlineUsers: [],
+  socket: null
 };
 
 const userSlice = createSlice({
@@ -26,7 +28,7 @@ const userSlice = createSlice({
       state.isSignInUp = true;
     },
     signUpSuccess: (state, action) => {
-      state.currentUser = null;
+      state.currentUser = action.payload;
       state.loading = false;
       state.error = null;
       state.isSignInUp = false;
@@ -56,6 +58,7 @@ const userSlice = createSlice({
       state.currentUser = null;
       state.error = null;
       state.loading = false;
+      state.socket = null;
     },
     setUser: (state, action) => {
       state.currentUser = action.payload;
@@ -74,7 +77,7 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
-    forgotPasswordFailure: (state) => {
+    forgotPasswordFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
     },
@@ -129,6 +132,15 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    setOnlineUsers: (state, action) => {
+      state.onlineUsers = action.payload;
+    },
+    connectSocket: (state, action) => {
+      state.socket = action.payload;
+    },
+    disconnectSocket: (state) => {
+      state.socket = null;
+    }
   }
 });
 
@@ -158,13 +170,16 @@ export const {
   deleteProfileStart,
   deleteProfileSuccess,
   deleteProfileFailure,
+  setOnlineUsers,
+  connectSocket,
+  disconnectSocket
 } = userSlice.actions;
 
 export const signup = (data, navigate) => async (dispatch) => {
   dispatch(signUpStart());
 
   try {
-    const res = await axiosInstance.post("/auth/signup", data);
+    const res = await axiosInstance.post("/api/auth/signup", data);
 
     dispatch(signUpSuccess(res.data));
     navigate("/verify-email");
@@ -180,8 +195,9 @@ export const verifyEmail = (code, navigate) => async (dispatch) => {
   dispatch(verifyEmailStart());
 
   try {
-    const response = await axiosInstance.post(`${API_URL}/verify-email`, { code });
+    const response = await axiosInstance.post(`${API_URL}/api/auth/verify-email`, { code });
     dispatch(verifyEmailSuccess(response.data.user));
+    dispatch(connectSocketThunk());
     navigate("/");
     toast.success("Account created successfully");
   } catch (error) {
@@ -195,10 +211,11 @@ export const login = (data, navigate) => async (dispatch) => {
   dispatch(logInStart());
 
   try {
-    const res = await axiosInstance.post("/auth/login", data);
+    const res = await axiosInstance.post("/api/auth/login", data);
     dispatch(logInSuccess(res.data));
 
     toast.success("Logged In successfully");
+    dispatch(connectSocketThunk());
     navigate("/");
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Login Failed";
@@ -207,10 +224,20 @@ export const login = (data, navigate) => async (dispatch) => {
   }
 };
 
-export const logout = (navigate) => async (dispatch) => {
+export const logout = (navigate) => async (dispatch, getState) => {
   try {
+    const { socket, currentUser } = getState().user;
+
+    if (socket && currentUser) {
+      socket.emit("userDisconnected", currentUser._id); // Notify server
+      socket.disconnect(); // Ensure socket is disconnected
+    }
+
     await axiosInstance.post("/auth/logout");
+
     dispatch(logoutSuccess());
+    dispatch(disconnectSocketThunk());
+    
     toast.success("Logged out successfully");
     navigate("/login");
   } catch (error) {
@@ -219,7 +246,7 @@ export const logout = (navigate) => async (dispatch) => {
   }
 };
 
-export const checkAuth = () => async (dispatch) => {
+export const checkAuth = () => async (dispatch, getState) => {
   dispatch(setCheckAuth());
 
   try {
@@ -227,6 +254,7 @@ export const checkAuth = () => async (dispatch) => {
 
     if (res.data?.user) {
       dispatch(setUser(res.data.user)); // Ensure `user` is extracted correctly
+      dispatch(connectSocketThunk());
     } else {
       console.warn("Warning: checkAuth response missing user data", res.data);
       dispatch(setUser(null));
@@ -243,7 +271,7 @@ export const forgotPassword = (email) => async (dispatch) => {
   dispatch(forgotPasswordStart());
 
   try {
-    await axiosInstance.post(`${API_URL}/forget-password`, { email });
+    await axiosInstance.post(`${API_URL}/api/auth/forget-password`, { email });
     dispatch(forgotPasswordSuccess());
     toast.success("Password reset link sent to your email");
   } catch (error) {
@@ -253,16 +281,16 @@ export const forgotPassword = (email) => async (dispatch) => {
   }
 };
 
-// New resetPassword action
 export const resetPassword = (token, password, navigate) => async (dispatch) => {
   dispatch(resetPasswordStart());
 
   try {
     const cleanToken = token.replace(/}$/, ''); // Remove any `{` or `}`
     console.log("Clean Token: ", cleanToken);
-    await axiosInstance.post(`${API_URL}/reset-password/${cleanToken}`, { password });
+    await axiosInstance.post(`${API_URL}/api/auth/reset-password/${cleanToken}`, { password });
     dispatch(resetPasswordSuccess());
     toast.success("Password has been successfully reset");
+    dispatch(connectSocketThunk());
     navigate("/");
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Password reset failed";
@@ -275,7 +303,7 @@ export const updateProfile = (userData) => async (dispatch) => {
   dispatch(updateProfileStart());
 
   try {
-    const res = await axiosInstance.put("/auth/update-profile", userData, {
+    const res = await axiosInstance.put("/api/auth/update-profile", userData, {
       withCredentials: true,
     });
 
@@ -292,7 +320,7 @@ export const deleteProfile = (userId, navigate) => async (dispatch) => {
   dispatch(deleteProfileStart());
 
   try {
-    await axiosInstance.delete(`/auth/delete/${userId}`, {
+    await axiosInstance.delete(`/api/auth/delete/${userId}`, {
       withCredentials: true,
     });
     dispatch(deleteProfileSuccess());
@@ -302,6 +330,34 @@ export const deleteProfile = (userId, navigate) => async (dispatch) => {
     const errorMessage = error.response?.data?.message || "Profile deletion failed";
     dispatch(deleteProfileFailure(errorMessage));
     toast.error(errorMessage);
+  }
+};
+
+export const connectSocketThunk = () => async (dispatch, getState) => {
+  const { currentUser, socket } = getState().user;
+
+  if (!currentUser || socket?.connected) return;
+
+  const newSocket = io(API_URL, {
+    query: {
+      userId: currentUser._id
+    },
+    reconnection: true
+  });
+  dispatch(connectSocket(newSocket));
+
+  newSocket.on("getOnlineUsers", (userIds) => {
+    dispatch(setOnlineUsers(userIds));
+  });
+};
+
+export const disconnectSocketThunk = () => async (dispatch, getState) => {
+  const { socket } = getState().user;
+
+  if (socket?.connected) {
+    socket.off("getOnlineUsers");
+    socket.disconnect();
+    dispatch(disconnectSocket());
   }
 };
 

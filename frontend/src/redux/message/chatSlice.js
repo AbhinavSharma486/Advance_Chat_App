@@ -18,9 +18,13 @@ const chatSlice = createSlice({
   reducers: {
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
+      state.messages = [];
     },
-
+    addMessage: (state, action) => {
+      state.messages.push(action.payload);
+    },
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(getUsers.pending, (state) => {
@@ -50,7 +54,8 @@ const chatSlice = createSlice({
 });
 
 export const {
-  setSelectedUser
+  setSelectedUser,
+  addMessage
 } = chatSlice.actions;
 
 
@@ -59,17 +64,17 @@ export const getUsers = createAsyncThunk("chat/getUsers", async (_, { rejectWith
     const response = await axiosInstance.get("/messages/user");
     return response.data;
   } catch (error) {
-    toast.error(error.response.data.message);
+    toast.error(error.response?.data?.message || "Failed to fetch users");
     return rejectWithValue(error.response.data.message);
   }
 });
 
 export const getMessages = createAsyncThunk("chat/getMessages", async (userId, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get(`/messages/${userId}`);
-    return response.data;
+    const res = await axiosInstance.get(`/messages/${userId}`);
+    return res.data;
   } catch (error) {
-    toast.error(error.response.data.message);
+    toast.error(error.response?.data?.message || "Failed to fetch messages");
     return rejectWithValue(error.response.data.message);
   }
 });
@@ -78,13 +83,44 @@ export const sendMessage = createAsyncThunk("chat/sendMessage", async (messageDa
   const { selectedUser } = getState().chat;
 
   try {
-    const response = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-    return response.data;
+    const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+    return res.data;
   } catch (error) {
-    toast.error(error.response.data.message);
+    toast.error(error.response?.data?.message || "Failed to send message");
     return rejectWithValue(error.response.data.message);
   }
 });
+
+export const subscribeToMessages = () => (dispatch, getState) => {
+  const { selectedUser } = getState().chat;
+  const { socket } = getState().user;
+
+  if (!selectedUser || !socket) return;
+
+  // Remove previous event listener before adding a new one to avoid duplicates
+  socket.off("newMessage");
+
+  socket.on("newMessage", (newMessage) => {
+    if (newMessage.senderId === selectedUser._id) {
+      dispatch(addMessage(newMessage));
+    }
+  });
+};
+
+export const unsubscribeFromMessages = () => (dispatch, getState) => {
+  const { socket } = getState().user;
+  const { selectedUser } = getState().chat;
+
+  if (!socket || !selectedUser) return;
+
+  console.log(`Unsubscribing from messages for user ${selectedUser._id}...`);
+
+  socket.off("newMessage", (newMessage) => {
+    if (newMessage.senderId === selectedUser._id) {
+      dispatch(addMessage(newMessage));
+    }
+  });
+};
 
 
 export default chatSlice.reducer;
