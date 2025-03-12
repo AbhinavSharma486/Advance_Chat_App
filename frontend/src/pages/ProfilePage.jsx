@@ -1,13 +1,15 @@
-import { useState } from 'react';
-import { Camera, Mail, User, Trash2 } from "lucide-react";
-import { useSelector, useDispatch } from 'react-redux';
-import { deleteProfile, updateProfile } from '../redux/user/userSlice';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteProfile, updateProfile } from "../redux/user/userSlice";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const [selectedImg, setSelectedImg] = useState(null);
   const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -24,25 +26,34 @@ const ProfilePage = () => {
   };
 
   const handleUpdateProfile = () => {
+    if (newPassword && newPassword.length < 6) {
+      return toast.error("Password must be at least 6 characters long.");
+    }
+
     const updatedData = {
       fullName: fullName || currentUser?.fullName,
       profilePic: selectedImg || currentUser?.profilePic,
+      newPassword: newPassword || undefined,
     };
     dispatch(updateProfile(updatedData));
   };
 
   const handleDeleteProfile = () => {
-    if (window.confirm("Are you sure you want to delete your profile? This action cannot be undone.")) {
-      dispatch(deleteProfile(currentUser._id, navigate));
+    if (
+      window.confirm(
+        "Are you sure you want to delete your profile? This action cannot be undone."
+      )
+    ) {
+      dispatch(deleteProfile(currentUser._id));
       toast.success("Profile deleted successfully.");
+      navigate("/");
     }
   };
 
   return (
-    <div className='h-full pt-16'>
+    <div className="h-full pt-16">
       <div className="max-w-2xl mx-auto p-4 py-2">
         <div className="bg-base-300 rounded-xl p-6 space-y-8">
-
           <div className="text-center">
             <h1 className="text-2xl font-semibold">Profile</h1>
             <p className="mt-2">Your profile information</p>
@@ -53,18 +64,18 @@ const ProfilePage = () => {
               <img
                 src={selectedImg || currentUser?.profilePic || "/avatar.png"}
                 alt="Profile"
-                className='size-32 rounded-full object-cover border-4'
+                className="size-32 rounded-full object-cover border-4"
               />
               <label
                 htmlFor="avatar-upload"
                 className="absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200"
               >
-                <Camera className='w-5 h-5 text-base-200' />
+                <Camera className="w-5 h-5 text-base-200" />
                 <input
                   type="file"
-                  id='avatar-upload'
-                  className='hidden'
-                  accept='image/*'
+                  id="avatar-upload"
+                  className="hidden"
+                  accept="image/*"
                   onChange={handleImageUpload}
                 />
               </label>
@@ -77,7 +88,7 @@ const ProfilePage = () => {
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
-                <User className='w-4 h-4' />
+                <User className="w-4 h-4" />
                 Full Name
               </div>
               <input
@@ -91,12 +102,40 @@ const ProfilePage = () => {
 
             <div className="space-y-2">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
-                <Mail className='w-4 h-4' />
+                <Mail className="w-4 h-4" />
                 Email Address
               </div>
               <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
                 {currentUser?.email}
               </p>
+            </div>
+
+            {/* Password Field - Fixed */}
+            <div className="space-y-2">
+              <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                New Password
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="px-4 py-2.5 bg-base-200 rounded-lg border w-full pr-10"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5 text-zinc-400" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-zinc-400" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -111,19 +150,15 @@ const ProfilePage = () => {
             onClick={handleDeleteProfile}
             className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 transition-all"
           >
-            <Trash2 className='w-5 h-5' /> Delete Profile
+            <Trash2 className="w-5 h-5" /> Delete Profile
           </button>
 
           <div className="mt-6 bg-base-300 rounded-xl p-6">
-            <h2 className="text-lg font-medium mb-4">
-              Account Information
-            </h2>
+            <h2 className="text-lg font-medium mb-4">Account Information</h2>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between py-2 border-b border-zinc-700">
                 <span>Member Since</span>
-                <span>
-                  {currentUser.createdAt?.split("T")[0]}
-                </span>
+                <span>{currentUser.createdAt?.split("T")[0]}</span>
               </div>
             </div>
           </div>

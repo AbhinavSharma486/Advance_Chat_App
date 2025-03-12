@@ -179,7 +179,7 @@ export const signup = (data, navigate) => async (dispatch) => {
   dispatch(signUpStart());
 
   try {
-    const res = await axiosInstance.post("/api/auth/signup", data);
+    const res = await axiosInstance.post("/auth/signup", data);
 
     dispatch(signUpSuccess(res.data));
     navigate("/verify-email");
@@ -195,7 +195,7 @@ export const verifyEmail = (code, navigate) => async (dispatch) => {
   dispatch(verifyEmailStart());
 
   try {
-    const response = await axiosInstance.post(`${API_URL}/api/auth/verify-email`, { code });
+    const response = await axiosInstance.post(`${API_URL}/auth/verify-email`, { code });
     dispatch(verifyEmailSuccess(response.data.user));
     dispatch(connectSocketThunk());
     navigate("/");
@@ -211,7 +211,7 @@ export const login = (data, navigate) => async (dispatch) => {
   dispatch(logInStart());
 
   try {
-    const res = await axiosInstance.post("/api/auth/login", data);
+    const res = await axiosInstance.post("/auth/login", data);
     dispatch(logInSuccess(res.data));
 
     toast.success("Logged In successfully");
@@ -226,18 +226,22 @@ export const login = (data, navigate) => async (dispatch) => {
 
 export const logout = (navigate) => async (dispatch, getState) => {
   try {
-    const { socket, currentUser } = getState().user;
+    const { socket, currentUser, onlineUsers } = getState().user;
 
     if (socket && currentUser) {
-      socket.emit("userDisconnected", currentUser._id); // Notify server
+      socket.emit("userDisconnected", currentUser._id); // Notify the server
       socket.disconnect(); // Ensure socket is disconnected
     }
 
     await axiosInstance.post("/auth/logout");
 
+    // Remove the current user from the onlineUsers list
+    const updatedOnlineUsers = onlineUsers.filter(userId => userId !== currentUser._id);
+    dispatch(setOnlineUsers(updatedOnlineUsers));
+
     dispatch(logoutSuccess());
     dispatch(disconnectSocketThunk());
-    
+
     toast.success("Logged out successfully");
     navigate("/login");
   } catch (error) {
@@ -271,7 +275,7 @@ export const forgotPassword = (email) => async (dispatch) => {
   dispatch(forgotPasswordStart());
 
   try {
-    await axiosInstance.post(`${API_URL}/api/auth/forget-password`, { email });
+    await axiosInstance.post(`${API_URL}/auth/forget-password`, { email });
     dispatch(forgotPasswordSuccess());
     toast.success("Password reset link sent to your email");
   } catch (error) {
@@ -287,7 +291,7 @@ export const resetPassword = (token, password, navigate) => async (dispatch) => 
   try {
     const cleanToken = token.replace(/}$/, ''); // Remove any `{` or `}`
     console.log("Clean Token: ", cleanToken);
-    await axiosInstance.post(`${API_URL}/api/auth/reset-password/${cleanToken}`, { password });
+    await axiosInstance.post(`${API_URL}/auth/reset-password/${cleanToken}`, { password });
     dispatch(resetPasswordSuccess());
     toast.success("Password has been successfully reset");
     dispatch(connectSocketThunk());
@@ -303,7 +307,7 @@ export const updateProfile = (userData) => async (dispatch) => {
   dispatch(updateProfileStart());
 
   try {
-    const res = await axiosInstance.put("/api/auth/update-profile", userData, {
+    const res = await axiosInstance.put("/auth/update-profile", userData, {
       withCredentials: true,
     });
 
@@ -320,7 +324,7 @@ export const deleteProfile = (userId, navigate) => async (dispatch) => {
   dispatch(deleteProfileStart());
 
   try {
-    await axiosInstance.delete(`/api/auth/delete/${userId}`, {
+    await axiosInstance.delete(`/auth/delete/${userId}`, {
       withCredentials: true,
     });
     dispatch(deleteProfileSuccess());

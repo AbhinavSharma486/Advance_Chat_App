@@ -27,7 +27,7 @@ const App = () => {
   const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
-    if (!["/login", "/signup", "/settings", "/google"].includes(location.pathname)) {
+    if (!["/login", "/signup", "/settings", "/google", "/verify-email"].includes(location.pathname)) {
       dispatch(checkAuth());
     }
   }, [dispatch, location.pathname, checkAuth]);

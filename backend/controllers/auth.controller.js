@@ -267,10 +267,10 @@ export const resetPassword = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic, fullName } = req.body;
+    const { profilePic, fullName, newPassword } = req.body;
     const userId = req.user.id;
 
-    if (!profilePic && !fullName) {
+    if (!profilePic && !fullName && !newPassword) {
       return res.status(400).json({ message: "At least one field is required to update" });
     }
 
@@ -283,6 +283,15 @@ export const updateProfile = async (req, res) => {
 
     if (fullName) {
       updateData.fullName = fullName;
+    }
+
+    if (newPassword) {
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
+      const salt = await bcryptjs.genSalt(10);
+      const hashedPassword = await bcryptjs.hash(newPassword, salt);
+      updateData.password = hashedPassword;
     }
 
     const updateUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
