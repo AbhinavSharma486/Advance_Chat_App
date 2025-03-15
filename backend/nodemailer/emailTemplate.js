@@ -19,7 +19,7 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
     <p>Enter this code on the verification page to complete your registration.</p>
     <p>This code will expire in 15 minutes for security reasons.</p>
     <p>If you didn't create an account with us, please ignore this email.</p>
-    <p>Best regards,<br>Your App Team</p>
+    <p>Best regards,<br>Chatify Team</p>
   </div>
   <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
     <p>This is an automated message, please do not reply to this email.</p>
@@ -48,10 +48,7 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
       <a href="{resetURL}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
     </div>
     <p>This link will expire in 1 hour for security reasons.</p>
-    <p>Best regards,<br>Your App Team</p>
-  </div>
-  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
-    <p>This is an automated message, please do not reply to this email.</p>
+    <p>Best regards,<br>Chatify</p>
   </div>
 </body>
 </html>
@@ -85,10 +82,62 @@ export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
       <li>Avoid using the same password across multiple sites</li>
     </ul>
     <p>Thank you for helping us keep your account secure.</p>
-    <p>Best regards,<br>Your App Team</p>
+    <p>Best regards,<br>Chatify</p>
   </div>
-  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
-    <p>This is an automated message, please do not reply to this email.</p>
+</body>
+</html>
+`;
+
+export const WELCOME_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Chatify</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .checklist {
+      text-align: left;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .checklist p {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Chatify</h1>
+    <h2>Welcome, {name}!</h2>
+    <p>Thanks for choosing Chatify! We are happy to see you on board.<br>
+      Whether you're here to connect, collaborate, or simply have great conversations, you're in the right place!</p>
+
+    <h3>Here’s what you can do next:</h3>
+    <div class="checklist">
+      <p>✅ <strong>Set up your profile</strong> – Personalize your experience.</p>
+      <p>✅ <strong>Join conversations</strong> – Start chatting in real-time.</p>
+      <p>✅ <strong>Explore features</strong> – Try out emojis, reactions, and more!</p>
+    </div>
+
+    <p>Happy chatting! 🚀</p>
+    <p style="font-size: 12px; color: gray;">We hope you enjoy this journey as much as we enjoy creating it for you.</p>
   </div>
 </body>
 </html>

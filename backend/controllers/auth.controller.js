@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 import crypto from "crypto";
 import cloudinary from "../lib/cloudinary.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email.js";
+import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../nodemailer/email.js";
 
 export const signup = async (req, res) => {
 

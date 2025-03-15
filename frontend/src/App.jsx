@@ -27,10 +27,10 @@ const App = () => {
   const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
-    if (!["/login", "/signup", "/settings", "/google", "/verify-email"].includes(location.pathname)) {
+    if (!["/login", "/signup", "/google", "/verify-email"].includes(location.pathname)) {
       dispatch(checkAuth());
     }
-  }, [dispatch, location.pathname, checkAuth]);
+  }, [dispatch, location.pathname]);
 
 
   useEffect(() => {
@@ -52,10 +52,10 @@ const App = () => {
         <Route path='/' element={currentUser ? <HomePage /> : <Navigate to="/login" />} />
         <Route path='/signup' element={!currentUser ? < SignUpPage /> : <Navigate to="/" />} />
         <Route path='/login' element={!currentUser ? <LoginPage /> : <Navigate to="/" />} />
-        <Route path='/forget-password' element={!currentUser ? <ForgetPasswordPage /> : <Navigate to="/" />} />
+        <Route path='/forget-password' element={<ForgetPasswordPage />} />
         <Route path='/reset-password/:token' element={!currentUser ? <ResetPasswordPage /> : <Navigate to="/" />} />
-        <Route path='/settings' element={currentUser ? <SettingsPage /> : <Navigate to="/login" />} />
-        <Route path='/verify-email' element={!currentUser ? <EmailVerificationPage /> : <Navigate to="/" />} />
+        <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/verify-email' element={<EmailVerificationPage />} />
         <Route path='/profile' element={currentUser ? <ProfilePage /> : <Navigate to="/" />} />
       </Routes>
 
