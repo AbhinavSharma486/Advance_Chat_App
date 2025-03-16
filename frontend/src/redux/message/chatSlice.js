@@ -98,36 +98,24 @@ export const subscribeToMessages = () => (dispatch, getState) => {
 
   if (!selectedUser || !socket) return;
 
-  // Remove previous listener if exists
-  if (socket.listenerRef) {
-    socket.off("newMessage", socket.listenerRef);
-  }
+  // Remove existing listener before adding a new one
+  socket.off("newMessage");
 
-  // Define the listener function
   const messageListener = (newMessage) => {
     if (newMessage.senderId === selectedUser._id) {
       dispatch(addMessage(newMessage));
     }
   };
 
-  // Store reference to the function
-  socket.listenerRef = messageListener;
-
-  // Subscribe to new messages
   socket.on("newMessage", messageListener);
 };
 
 export const unsubscribeFromMessages = () => (dispatch, getState) => {
   const { socket } = getState().user;
-  const { selectedUser } = getState().chat;
 
-  if (!socket || !selectedUser) return;
+  if (!socket) return;
 
-  // Use the stored function reference to properly remove the listener
-  socket.off("newMessage", socket.listenerRef);
-
-  // Remove reference after unsubscribing
-  socket.listenerRef = null;
+  socket.off("newMessage");
 };
 
 

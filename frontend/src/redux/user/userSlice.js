@@ -232,7 +232,8 @@ export const logout = (navigate) => async (dispatch, getState) => {
 
     if (socket && currentUser) {
       socket.emit("userDisconnected", currentUser._id); // Notify the server
-      socket.disconnect(); // Ensure socket is disconnected
+      socket.off("getOnlineUsers"); // Remove listeners
+      socket.disconnect(); // Disconnect socket
     }
 
     await axiosInstance.post("/auth/logout");
@@ -341,19 +342,26 @@ export const deleteProfile = (userId, navigate) => async (dispatch) => {
 export const connectSocketThunk = () => async (dispatch, getState) => {
   const { currentUser, socket } = getState().user;
 
-  if (!currentUser || socket?.connected) return;
+  if (!currentUser || socket) return; // Prevent multiple connections
 
   const newSocket = io(API_URL, {
-    query: {
-      userId: currentUser._id
-    },
+    query: { userId: currentUser._id },
     reconnection: true
   });
-  dispatch(connectSocket(newSocket));
+
+  newSocket.on("connection", () => {
+    console.log("Socket connected:", newSocket.id);
+  });
+
+  newSocket.on("disconnect", () => {
+    console.log("Socket disconnected");
+  });
 
   newSocket.on("getOnlineUsers", (userIds) => {
     dispatch(setOnlineUsers(userIds));
   });
+
+  dispatch(connectSocket(newSocket)); // Store socket in Redux
 };
 
 export const disconnectSocketThunk = () => async (dispatch, getState) => {
