@@ -6,4 +6,12 @@ export default defineConfig({
   optimizeDeps: {
     include: ["react", "react-dom", "react-redux"],
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
+    },
+  },
 });
