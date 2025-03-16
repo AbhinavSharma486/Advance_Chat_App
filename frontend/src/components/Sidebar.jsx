@@ -9,8 +9,6 @@ const Sidebar = () => {
 
   const { users, selectedUser, isUsersLoading } = useSelector((state) => state.chat);
   const { onlineUsers = [] } = useSelector((state) => state.user || {});
-  console.log({ onlineUsers });
-
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 

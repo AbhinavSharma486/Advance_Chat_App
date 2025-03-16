@@ -22,7 +22,6 @@ const App = () => {
   const location = useLocation();
 
   const { currentUser, isCheckingAuth, onlineUsers } = useSelector((state) => state.user);
-  console.log({ onlineUsers });
 
   const theme = useSelector((state) => state.theme.theme);
 

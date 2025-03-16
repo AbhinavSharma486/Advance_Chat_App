@@ -4,6 +4,16 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import themeReducer from "./themeSlice.js";
 import chatReducer from "./message/chatSlice.js";
+import { createTransform } from "redux-persist";
+
+const removeNonSerializable = createTransform(
+  (inboundState) => {
+    const newState = { ...inboundState };
+    delete newState.socket; // Remove non-serializable socket object
+    return newState;
+  },
+  null
+);
 
 const rootReducer = combineReducers({
   user: userReducer,
@@ -15,7 +25,8 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage,
-  version: 1
+  version: 1,
+  transforms: [removeNonSerializable],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

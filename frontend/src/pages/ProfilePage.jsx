@@ -37,6 +37,9 @@ const ProfilePage = () => {
       newPassword: newPassword || undefined,
     };
     dispatch(updateProfile(updatedData));
+
+    setFullName("");
+    setNewPassword("");
   };
 
   const handleDeleteProfile = () => {
