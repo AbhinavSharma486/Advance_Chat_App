@@ -65,6 +65,7 @@ const userSlice = createSlice({
     },
     setCheckAuth: (state) => {
       state.isCheckingAuth = true;
+      state.isLoggingIn = false;
     },
     setCheckAuthComplete: (state) => {
       state.isCheckingAuth = false;

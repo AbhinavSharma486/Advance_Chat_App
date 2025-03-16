@@ -27,11 +27,8 @@ const App = () => {
   const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
-    if (!["/login", "/signup", "/google", "/verify-email"].includes(location.pathname)) {
-      dispatch(checkAuth());
-    }
-  }, [dispatch, location.pathname]);
-
+    dispatch(checkAuth());
+  }, [dispatch, location.pathname, theme]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

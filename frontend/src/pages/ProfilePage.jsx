@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye } from "lucide-react";
+import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye, X } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { deleteProfile, updateProfile } from "../redux/user/userSlice";
 import toast from "react-hot-toast";
@@ -10,6 +10,7 @@ const ProfilePage = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,15 +40,12 @@ const ProfilePage = () => {
   };
 
   const handleDeleteProfile = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your profile? This action cannot be undone."
-      )
-    ) {
-      dispatch(deleteProfile(currentUser._id));
-      toast.success("Profile deleted successfully.");
-      navigate("/");
+    if (!currentUser) {
+      toast.error("User not found!");
+      return;
     }
+    setShowDeleteModal(false);
+    dispatch(deleteProfile(currentUser._id, navigate));
   };
 
   return (
@@ -110,7 +108,6 @@ const ProfilePage = () => {
               </p>
             </div>
 
-            {/* Password Field - Fixed */}
             <div className="space-y-2">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
                 <Lock className="w-4 h-4" />
@@ -147,7 +144,7 @@ const ProfilePage = () => {
           </button>
 
           <button
-            onClick={handleDeleteProfile}
+            onClick={() => setShowDeleteModal(true)}
             className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 transition-all"
           >
             <Trash2 className="w-5 h-5" /> Delete Profile
@@ -158,12 +155,46 @@ const ProfilePage = () => {
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between py-2 border-b border-zinc-700">
                 <span>Member Since</span>
-                <span>{currentUser.createdAt?.split("T")[0]}</span>
+                <span>
+                  {currentUser?.createdAt
+                    ? new Date(currentUser.createdAt).toLocaleDateString("en-GB")
+                    : "N/A"}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg text-red-500 font-bold">Confirm Deletion</h2>
+              <button onClick={() => setShowDeleteModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="mt-4 text-sm text-gray-600">
+              Are you sure you want to delete your profile? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-3xl"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-3xl"
+                onClick={handleDeleteProfile}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
