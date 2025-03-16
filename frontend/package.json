@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.0",
+    "advance-chat-web-app": "file:..",
     "axios": "^1.7.9",
     "firebase": "^11.3.1",
     "framer-motion": "^12.4.7",
