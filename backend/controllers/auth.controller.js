@@ -6,7 +6,7 @@ import cloudinary from "../lib/cloudinary.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../nodemailer/email.js";
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "/";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://chatify-4x1c.onrender.com";
 
 
 export const signup = async (req, res) => {
