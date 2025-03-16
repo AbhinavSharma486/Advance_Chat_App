@@ -197,7 +197,7 @@ export const verifyEmail = (code, navigate) => async (dispatch) => {
   dispatch(verifyEmailStart());
 
   try {
-    const response = await axiosInstance.post(`${API_URL}/api/auth/verify-email`, { code });
+    const response = await axiosInstance.post("/auth/verify-email", { code });
     dispatch(verifyEmailSuccess(response.data.user));
     dispatch(connectSocketThunk());
     navigate("/");
@@ -277,7 +277,7 @@ export const forgotPassword = (email) => async (dispatch) => {
   dispatch(forgotPasswordStart());
 
   try {
-    await axiosInstance.post(`${API_URL}/api/auth/forget-password`, { email });
+    await axiosInstance.post("/auth/forget-password", { email });
     dispatch(forgotPasswordSuccess());
     toast.success("Password reset link sent to your email");
   } catch (error) {
@@ -292,7 +292,7 @@ export const resetPassword = (token, password, navigate) => async (dispatch) => 
 
   try {
     const cleanToken = token.replace(/}$/, ''); // Remove any `{` or `}`
-    await axiosInstance.post(`${API_URL}/api/auth/reset-password/${cleanToken}`, { password });
+    await axiosInstance.post(`/auth/reset-password/${cleanToken}`, { password });
     dispatch(resetPasswordSuccess());
     toast.success("Password has been successfully reset");
     dispatch(connectSocketThunk());
