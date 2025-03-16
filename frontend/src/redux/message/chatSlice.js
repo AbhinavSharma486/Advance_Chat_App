@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import toast from 'react-hot-toast';
+
 import { axiosInstance } from "../../lib/axios.js";
 
 // Initial State 
@@ -64,7 +65,7 @@ export const getUsers = createAsyncThunk("chat/getUsers", async (_, { rejectWith
     const response = await axiosInstance.get("/messages/user");
     return response.data;
   } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to fetch users");
+    console.log(error.response?.data?.message || "Failed to fetch users");
     return rejectWithValue(error.response.data.message);
   }
 });
@@ -121,8 +122,6 @@ export const unsubscribeFromMessages = () => (dispatch, getState) => {
   const { selectedUser } = getState().chat;
 
   if (!socket || !selectedUser) return;
-
-  // console.log("Unsubscribing from messages...");
 
   // Use the stored function reference to properly remove the listener
   socket.off("newMessage", socket.listenerRef);

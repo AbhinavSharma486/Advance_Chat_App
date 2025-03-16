@@ -1,8 +1,10 @@
 import React from 'react';
+import { useSelector } from "react-redux";
+
 import ChatContainer from '../components/ChatContainer';
 import NoChatSelected from '../components/NoChatSelected';
 import Sidebar from '../components/Sidebar';
-import { useDispatch, useSelector } from "react-redux";
+
 
 const HomePage = () => {
   const { selectedUser } = useSelector((state) => state.chat);

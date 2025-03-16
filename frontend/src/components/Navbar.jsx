@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
-import { logout } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
+import { logout } from "../redux/user/userSlice";
 
 
 const Navbar = () => {
@@ -22,6 +23,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 h-16">
         <div className="flex items-center justify-between h-full">
+
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-all">
               <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -56,6 +58,7 @@ const Navbar = () => {
               )
             }
           </div>
+
         </div>
       </div>
     </header>

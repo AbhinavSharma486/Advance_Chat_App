@@ -6,7 +6,9 @@ import {
   WELCOME_EMAIL_TEMPLATE
 } from "./emailTemplate.js";
 
+
 export const sendVerificationEmail = async (email, verificationToken) => {
+
   try {
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
@@ -15,8 +17,8 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken)
     };
 
-    const response = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully", response);
+    await transporter.sendMail(mailOptions);
+
   } catch (error) {
     console.error("Error in sending verification email", error);
     throw new Error(`Error in sending verification email: ${error.message}`);
@@ -24,16 +26,17 @@ export const sendVerificationEmail = async (email, verificationToken) => {
 };
 
 export const sendWelcomeEmail = async (email, name) => {
+
   try {
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
-      to: email, 
+      to: email,
       subject: "Welcome to Chatify",
       html: WELCOME_EMAIL_TEMPLATE.replace("{name}", name),
     };
 
-    const response = await transporter.sendMail(mailOptions); 
-    console.log("Welcome email sent successfully", response);
+    await transporter.sendMail(mailOptions);
+
   } catch (error) {
     console.error("Error in sending welcome email", error);
     throw new Error(`Error in sending welcome email: ${error.message}`);
@@ -41,16 +44,17 @@ export const sendWelcomeEmail = async (email, name) => {
 };
 
 export const sendPasswordResetEmail = async (email, resetURL) => {
+
   try {
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
-      to: email, 
+      to: email,
       subject: "Reset your password",
       html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
     };
 
-    const response = await transporter.sendMail(mailOptions); 
-    console.log("Password reset email sent successfully", response);
+    await transporter.sendMail(mailOptions);
+
   } catch (error) {
     console.error("Error in sending password reset email", error);
     throw new Error(`Error in sending password reset email: ${error.message}`);
@@ -58,6 +62,7 @@ export const sendPasswordResetEmail = async (email, resetURL) => {
 };
 
 export const sendResetSuccessEmail = async (email) => {
+
   try {
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
@@ -66,8 +71,8 @@ export const sendResetSuccessEmail = async (email) => {
       html: PASSWORD_RESET_SUCCESS_TEMPLATE,
     };
 
-    const response = await transporter.sendMail(mailOptions); 
-    console.log("Password reset success email sent successfully", response);
+    await transporter.sendMail(mailOptions);
+
   } catch (error) {
     console.error("Error in sending password reset success email", error);
     throw new Error(`Error sending password reset success email: ${error.message}`);

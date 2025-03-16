@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useSelector, useDispatch } from "react-redux";
+
 import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
 import { signup } from "../redux/user/userSlice";
-import { useSelector, useDispatch } from "react-redux";
 import OAuth from "../components/OAuth";
+
 
 const SignUpPage = () => {
   const navigate = useNavigate();

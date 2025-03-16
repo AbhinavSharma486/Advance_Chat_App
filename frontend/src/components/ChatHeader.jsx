@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setSelectedUser } from '../redux/message/chatSlice';
 import { X } from 'lucide-react';
+
+import { setSelectedUser } from '../redux/message/chatSlice';
 
 
 const ChatHeader = () => {
@@ -40,6 +41,7 @@ const ChatHeader = () => {
         <button onClick={() => dispatch(setSelectedUser(null))}>
           <X />
         </button>
+        
       </div>
     </div>
   );

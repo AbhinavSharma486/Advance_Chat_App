@@ -1,4 +1,3 @@
-import './App.css';
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";

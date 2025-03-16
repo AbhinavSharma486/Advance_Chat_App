@@ -2,7 +2,9 @@ import React, { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
+
 import { sendMessage } from '../redux/message/chatSlice';
+
 
 const MessageInput = () => {
   const dispatch = useDispatch();
@@ -110,6 +112,7 @@ const MessageInput = () => {
         >
           <Send size={22} />
         </button>
+
       </form>
     </div>
   );

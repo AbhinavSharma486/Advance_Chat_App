@@ -3,9 +3,11 @@ import { AiFillGoogleCircle } from 'react-icons/ai';
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import toast from "react-hot-toast";
+
 import { logInSuccess, logInFailure } from "../redux/user/userSlice";
 import { app } from "../../firebase";
-import toast from "react-hot-toast";
+
 
 export default function OAuth() {
   const auth = getAuth(app);

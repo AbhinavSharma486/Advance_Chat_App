@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users } from 'lucide-react';
+
+import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { getUsers, setSelectedUser } from '../redux/message/chatSlice';
+
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -23,6 +25,7 @@ const Sidebar = () => {
   return (
     <aside className="h-full w-20 lg:w-72 md:w-52 border-r border-base-300 flex flex-col transition-all duration-200">
       <div className="border-b border-base-300 w-full p-5">
+
         <div className="flex items-center gap-2">
           <Users className="size-6" />
           <span className="font-medium hidden lg:block md:block">Contacts</span>
@@ -41,6 +44,7 @@ const Sidebar = () => {
           </label>
           <span className="text-sm text-zinc-500">({onlineUsers.length - 1} online)</span>
         </div>
+
       </div>
 
       <div className="overflow-y-auto w-full py-3">
@@ -88,6 +92,7 @@ const Sidebar = () => {
           )
         }
       </div>
+
     </aside>
   );
 };

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from "react-redux";
+
 import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
 import { login } from "../redux/user/userSlice";
-import { useSelector, useDispatch } from "react-redux";
 import OAuth from "../components/OAuth";
 
 
@@ -41,6 +42,7 @@ const LoginPage = () => {
           {/* LOGO */}
           <div className="text-center">
             <div className="flex flex-col items-center gap-2 group">
+
               <div
                 className="size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
               >
@@ -49,6 +51,7 @@ const LoginPage = () => {
 
               <h1 className='text-2xl font-bold mt-2'>Welcome Back</h1>
               <p className='text-base-content/60'>Log in to your account</p>
+
             </div>
           </div>
 
@@ -109,6 +112,7 @@ const LoginPage = () => {
                   Forget Password?
                 </Link>
               </div>
+
             </div>
 
             {/* Submit Button */}
@@ -143,6 +147,7 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
+
         </div>
       </div>
 

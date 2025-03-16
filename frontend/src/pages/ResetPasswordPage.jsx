@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, MessageSquare } from "lucide-react";
 import { resetPassword } from '../redux/user/userSlice';
-import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
+
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState('');
@@ -46,6 +48,7 @@ const ResetPasswordPage = () => {
       {/* LEFT SIDE */}
       <div className='flex justify-center items-center p-6 sm:p-12 mt-5'>
         <div className="w-full max-w-md space-y-1">
+
           {/* LOGO */}
           <div className="text-center">
             <div className="flex flex-col items-center gap-2 group">
@@ -130,6 +133,7 @@ const ResetPasswordPage = () => {
                 Set New Password
               </button>
             </div>
+
           </form>
         </div>
       </div >

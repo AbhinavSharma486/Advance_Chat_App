@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { MessageSquare } from 'lucide-react';
-import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
 import { useNavigate } from 'react-router-dom';
+
+import LeftSideOfSignUpAndLoginPage from '../components/LeftSideOfSignUpAndLoginPage';
 import { verifyEmail } from '../redux/user/userSlice';
+
 
 const EmailVerificationPage = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -74,6 +76,7 @@ const EmailVerificationPage = () => {
       {/* LEFT SIDE */}
       <div className='flex justify-center items-center p-6 sm:p-12 mt-5'>
         <div className="w-full max-w-md space-y-1">
+
           {/* LOGO */}
           <div className="text-center">
             <div className="flex flex-col items-center gap-2 group">
@@ -90,6 +93,7 @@ const EmailVerificationPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className='space-y-4'>
+
             {/* Enter 6 digit code here */}
             <div className="flex justify-between mt-5">
               {

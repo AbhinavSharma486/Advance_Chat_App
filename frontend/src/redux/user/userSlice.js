@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
-import { axiosInstance } from "../../lib/axios";
 import { io } from "socket.io-client";
+
+import { axiosInstance } from "../../lib/axios";
 
 const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
@@ -291,7 +292,6 @@ export const resetPassword = (token, password, navigate) => async (dispatch) => 
 
   try {
     const cleanToken = token.replace(/}$/, ''); // Remove any `{` or `}`
-    console.log("Clean Token: ", cleanToken);
     await axiosInstance.post(`${API_URL}/api/auth/reset-password/${cleanToken}`, { password });
     dispatch(resetPasswordSuccess());
     toast.success("Password has been successfully reset");
@@ -365,6 +365,5 @@ export const disconnectSocketThunk = () => async (dispatch, getState) => {
     dispatch(disconnectSocket());
   }
 };
-
 
 export default userSlice.reducer;

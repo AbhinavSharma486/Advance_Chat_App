@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye, X } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteProfile, updateProfile } from "../redux/user/userSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+
+import { deleteProfile, updateProfile } from "../redux/user/userSlice";
 
 const ProfilePage = () => {
   const [selectedImg, setSelectedImg] = useState(null);
@@ -55,6 +56,7 @@ const ProfilePage = () => {
     <div className="h-full pt-16">
       <div className="max-w-2xl mx-auto p-4 py-2">
         <div className="bg-base-300 rounded-xl p-6 space-y-8">
+
           <div className="text-center">
             <h1 className="text-2xl font-semibold">Profile</h1>
             <p className="mt-2">Your profile information</p>
@@ -87,6 +89,7 @@ const ProfilePage = () => {
           </div>
 
           <div className="space-y-6">
+
             <div className="space-y-2">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
                 <User className="w-4 h-4" />
@@ -137,6 +140,7 @@ const ProfilePage = () => {
                 </button>
               </div>
             </div>
+
           </div>
 
           <button
@@ -166,38 +170,43 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg text-red-500 font-bold">Confirm Deletion</h2>
-              <button onClick={() => setShowDeleteModal(false)}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="mt-4 text-sm text-gray-600">
-              Are you sure you want to delete your profile? This action cannot be undone.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-3xl"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-3xl"
-                onClick={handleDeleteProfile}
-              >
-                Delete
-              </button>
+      {
+        showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg text-red-500 font-bold">Confirm Deletion</h2>
+                <button onClick={() => setShowDeleteModal(false)}>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="mt-4 text-sm text-gray-600">
+                Are you sure you want to delete your profile? This action cannot be undone.
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-3xl"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-3xl"
+                  onClick={handleDeleteProfile}
+                >
+                  Delete
+                </button>
+
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
     </div>
   );
 };

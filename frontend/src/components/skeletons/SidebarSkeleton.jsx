@@ -34,6 +34,7 @@ const SidebarSkeleton = () => {
           </div>
         ))}
       </div>
+
     </aside>
   );
 };

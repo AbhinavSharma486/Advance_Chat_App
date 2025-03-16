@@ -1,6 +1,8 @@
 import express from "express";
+
 import { checkAuth, google, login, logout, signup, forgetPassword, resetPassword, verifyEmail, updateProfile, deleteUser } from "../controllers/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
+
 
 const router = express.Router();
 

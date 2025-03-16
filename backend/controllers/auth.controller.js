@@ -1,9 +1,11 @@
 import bcryptjs from "bcryptjs";
-import User from "../models/user.model.js";
 import crypto from "crypto";
+
+import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../nodemailer/email.js";
+
 
 export const signup = async (req, res) => {
 
@@ -38,9 +40,6 @@ export const signup = async (req, res) => {
 
     await user.save();
 
-    // jwt token 
-    // generateTokenAndSetCookie(res, user._id);
-
     await sendVerificationEmail(user.email, user.verificationToken);
 
     res.status(201).json({
@@ -51,8 +50,6 @@ export const signup = async (req, res) => {
         password: undefined,
       }
     });
-
-    console.log(user);
 
   } catch (error) {
     console.log("Error in Signup controller", error);
@@ -93,6 +90,7 @@ export const verifyEmail = async (req, res) => {
         password: undefined
       }
     });
+
   } catch (error) {
     console.log("Error in VerifyEmail controller : ", error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -126,6 +124,7 @@ export const login = async (req, res) => {
         password: undefined
       }
     });
+
   } catch (error) {
     console.log("Error in Login controller", error);
     res.status(400).json({ success: false, message: error.message });
@@ -134,9 +133,12 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
+
   try {
     res.cookie("token", "", { maxAge: 0 });
+
     res.status(200).json({ message: "Logged out successfully" });
+
   } catch (error) {
     console.log("Error in Logout controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -144,6 +146,7 @@ export const logout = async (req, res) => {
 };
 
 export const checkAuth = async (req, res) => {
+
   try {
     const user = await User.findById(req.user).select("-password");
 
@@ -152,6 +155,7 @@ export const checkAuth = async (req, res) => {
     }
 
     res.status(200).json({ success: true, user });
+
   } catch (error) {
     console.log("Error in check auth controller", error.message);
     res.status(500).json({ message: "Internal server error" });
@@ -194,6 +198,7 @@ export const google = async (req, res) => {
       message: "Google login successful",
       user: rest
     });
+
   } catch (error) {
     console.log("Error in google controller", error);
     res.status(400).json({ success: false, message: "Internal Server Error" });
@@ -201,7 +206,6 @@ export const google = async (req, res) => {
 };
 
 export const forgetPassword = async (req, res) => {
-  console.log("Request Body:", req.body);
   const { email } = req.body;
 
   try {
@@ -224,6 +228,7 @@ export const forgetPassword = async (req, res) => {
     await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
 
     res.status(200).json({ success: true, message: "Password reset email sent to your email" });
+
   } catch (error) {
     console.log("Error in forgetPassword controller", error);
     res.status(400).json({ success: false, message: error.messagae });
@@ -231,6 +236,7 @@ export const forgetPassword = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
+
   try {
     const token = req.params.token || req.body.token || req.query.token;
     const { password } = req.body;
@@ -259,6 +265,7 @@ export const resetPassword = async (req, res) => {
     await sendResetSuccessEmail(user.email);
 
     res.status(200).json({ success: true, message: "Password reset successfully" });
+
   } catch (error) {
     console.log("Error in resetPassword controller", error);
     res.status(400).json({ success: false, message: error.message });
@@ -266,6 +273,7 @@ export const resetPassword = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
+
   try {
     const { profilePic, fullName, newPassword } = req.body;
     const userId = req.user.id;
@@ -289,14 +297,17 @@ export const updateProfile = async (req, res) => {
       if (newPassword.length < 6) {
         return res.status(400).json({ message: "Password must be at least 6 characters long" });
       }
+
       const salt = await bcryptjs.genSalt(10);
       const hashedPassword = await bcryptjs.hash(newPassword, salt);
+
       updateData.password = hashedPassword;
     }
 
     const updateUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
 
     res.status(200).json(updateUser);
+
   } catch (error) {
     console.log("Error in update profile pic controller", error.message);
     res.status(500).json({ message: "Internal server error" });
@@ -304,9 +315,12 @@ export const updateProfile = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
+
   try {
     await User.findByIdAndDelete(req.params.userId);
+
     res.status(200).json({ message: "User deleted successfully" });
+
   } catch (error) {
     console.log("Error in delete user controller", error.message);
     res.status(500).json({ message: "Internal server error" });
