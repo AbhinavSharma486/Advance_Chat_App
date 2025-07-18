@@ -1,13 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { sendMessage } from '../redux/message/chatSlice';
+import { sendMessage, clearReply } from '../redux/message/chatSlice.js';
 
 
 const MessageInput = () => {
   const dispatch = useDispatch();
+  const reply = useSelector(state => state.chat.reply);
 
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
@@ -48,6 +49,7 @@ const MessageInput = () => {
       setImagePreview(null);
 
       if (fileInputRef.current) fileInputRef.current.value = "";
+      dispatch(clearReply());
     } catch (error) {
       console.log("Failed to send message : ", error);
     }
@@ -56,6 +58,18 @@ const MessageInput = () => {
 
   return (
     <div className='p-4 w-full'>
+      {/* Reply Preview */}
+      {reply && (
+        <div className="mb-2 p-2 rounded bg-base-200 border-l-4 border-primary flex items-center justify-between">
+          <div>
+            <div className="text-xs text-zinc-500">Replying to {reply.senderId?.fullName || 'User'}</div>
+            <div className="text-sm font-medium truncate max-w-xs">
+              {reply.text || (reply.image ? '[Image]' : '')}
+            </div>
+          </div>
+          <button className="btn btn-xs btn-ghost ml-2" onClick={() => dispatch(clearReply())}><X size={16} /></button>
+        </div>
+      )}
       {
         imagePreview && (
           <div className='mb-3 flex items-center gap-2'>
