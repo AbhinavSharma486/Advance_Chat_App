@@ -10,6 +10,7 @@ const initialState = {
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  reply: null
 };
 
 // Reducers 
@@ -24,6 +25,11 @@ const chatSlice = createSlice({
     addMessage: (state, action) => {
       state.messages.push(action.payload);
     },
+    updateMessageReactions: (state, action) => {
+      const { messageId, reactions } = action.payload;
+      const msg = state.messages.find(m => m._id === messageId);
+      if (msg) msg.reactions = reactions;
+    }
   },
 
   extraReducers: (builder) => {
@@ -56,7 +62,8 @@ const chatSlice = createSlice({
 
 export const {
   setSelectedUser,
-  addMessage
+  addMessage,
+  updateMessageReactions
 } = chatSlice.actions;
 
 
@@ -92,14 +99,25 @@ export const sendMessage = createAsyncThunk("chat/sendMessage", async (messageDa
   }
 });
 
+export const reactToMessage = (messageId, emoji) => async (dispatch) => {
+  try {
+    const res = await axiosInstance.post(`/messages/react/${messageId}`, { emoji });
+    dispatch(updateMessageReactions(res.data));
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to react to message");
+  }
+};
+
 export const subscribeToMessages = () => (dispatch, getState) => {
   const { selectedUser } = getState().chat;
   const { socket } = getState().user;
-
   if (!selectedUser || !socket) return;
 
   // Remove existing listener before adding a new one
   socket.off("newMessage");
+  socket.off("messageReaction");
+  socket.off("messageEdited");
+  socket.off("messageDeleted");
 
   const messageListener = (newMessage) => {
     if (newMessage.senderId === selectedUser._id) {
@@ -107,15 +125,20 @@ export const subscribeToMessages = () => (dispatch, getState) => {
     }
   };
 
+  const reactionListner = (data) => {
+    dispatch(updateMessageReactions(data));
+  };
+
   socket.on("newMessage", messageListener);
+  socket.on("messageReaction", reactionListner);
 };
 
 export const unsubscribeFromMessages = () => (dispatch, getState) => {
   const { socket } = getState().user;
-
   if (!socket) return;
 
   socket.off("newMessage");
+  socket.off("messageReaction");
 };
 
 
