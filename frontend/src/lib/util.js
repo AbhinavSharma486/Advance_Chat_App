@@ -6,3 +6,5 @@ export function formatMessageTime(date) {
     timeZone: "Asia/Kolkata", // Indian Standard Time
   });
 }
+
+export const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "🥲", "🙏🏻"];
