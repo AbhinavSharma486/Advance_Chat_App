@@ -133,3 +133,41 @@ export const reactToMessage = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const editMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { text } = req.body;
+    const userId = req.user.id;
+
+    const message = await Message.findById(messageId);
+
+    if (!message) return res.status(404).json({ message: "Message not found" });
+
+    if (message.senderId.toString() !== userId) return res.status(403).json({ message: "Unauthorized" });
+
+    message.text = text;
+    message.edited = true;
+    message.editedAt = new Date();
+
+    await message.save();
+
+    // Real time update
+    const receiverSocketIds = getReceiverSocketId(message.receiverId.toString());
+
+    if (receiverSocketIds) {
+      const socketIdsArray = Array.isArray(receiverSocketIds) ? receiverSocketIds : [receiverSocketIds];
+
+      socketIdsArray.forEach(socketId => {
+        io.to(socketId).emit("messageEdited", { messageId, test, edited: true, editedAt: message.editedAt });
+      });
+    }
+
+    io.to(req.user.id).emit("messageEdited", { messageId, text, edited: true, editedAt: message.editedAt });
+
+    res.status(200).json({ messageId, text, edited: true, editedAt: message.editedAt });
+  } catch (error) {
+    console.log("Error in editMessage controller", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
