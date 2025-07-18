@@ -38,6 +38,16 @@ const chatSlice = createSlice({
         msg.edited = edited;
         msg.editedAt = editedAt;
       }
+    },
+    updateMessageDelete: (state, action) => {
+      const { messageId } = action.payload;
+      const msg = state.messages.find(m => String(m._id) === String(messageId));
+      if (msg) {
+        msg.text = "Message deleted";
+        msg.image = undefined;
+        msg.edited = false;
+        msg.editedAt = undefined;
+      }
     }
   },
 
@@ -73,7 +83,8 @@ export const {
   setSelectedUser,
   addMessage,
   updateMessageReactions,
-  updateMessageEdit
+  updateMessageEdit,
+  updateMessageDelete
 } = chatSlice.actions;
 
 
@@ -127,6 +138,15 @@ export const editMessage = (messageId, text) => async (dispatch) => {
   }
 };
 
+export const deleteMessage = (messageId) => async (dispatch) => {
+  try {
+    const res = await axiosInstance.delete(`/messages/delete/${messageId}`);
+    dispatch(updateMessageDelete(res.data));
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to delete message");
+  }
+};
+
 export const subscribeToMessages = () => (dispatch, getState) => {
   const { selectedUser } = getState().chat;
   const { socket } = getState().user;
@@ -152,9 +172,14 @@ export const subscribeToMessages = () => (dispatch, getState) => {
     dispatch(updateMessageEdit(data));
   };
 
+  const deleteListner = (data) => {
+    dispatch(updateMessageDelete(data));
+  };
+
   socket.on("newMessage", messageListener);
   socket.on("messageReaction", reactionListner);
   socket.on("messageEdited", editListner);
+  socket.on("messageDeleted", deleteListner);
 };
 
 export const unsubscribeFromMessages = () => (dispatch, getState) => {
@@ -164,6 +189,7 @@ export const unsubscribeFromMessages = () => (dispatch, getState) => {
   socket.off("newMessage");
   socket.off("messageReaction");
   socket.off("messageEdited");
+  socket.off("messageDeleted");
 };
 
 
