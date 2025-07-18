@@ -24,7 +24,7 @@ app.use(cors({
 }));
 
 app.use("/api/auth", authRoutes); // alows us to parse incoming requests from : req.body
-app.use("/api/messages", authRoutes, messageRoute);
+app.use("/api/messages", messageRoute);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

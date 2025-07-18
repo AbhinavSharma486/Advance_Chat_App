@@ -17,6 +17,24 @@ const messageSchema = new mongoose.Schema(
     },
     image: {
       type: String,
+    },
+    reactions: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        emoji: String
+      }
+    ],
+    edited: {
+      type: Boolean,
+      default: false
+    },
+    editedAt: {
+      type: Date
+    },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null
     }
   }, { timestamps: true }
 );
