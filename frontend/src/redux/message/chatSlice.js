@@ -48,6 +48,12 @@ const chatSlice = createSlice({
         msg.edited = false;
         msg.editedAt = undefined;
       }
+    },
+    setReply: (state, action) => {
+      state.reply = action.payload;
+    },
+    clearReply: (state) => {
+      state.reply = null;
     }
   },
 
@@ -84,7 +90,9 @@ export const {
   addMessage,
   updateMessageReactions,
   updateMessageEdit,
-  updateMessageDelete
+  updateMessageDelete,
+  setReply,
+  clearReply
 } = chatSlice.actions;
 
 
