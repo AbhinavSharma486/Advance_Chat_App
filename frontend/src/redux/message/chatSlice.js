@@ -29,6 +29,15 @@ const chatSlice = createSlice({
       const { messageId, reactions } = action.payload;
       const msg = state.messages.find(m => m._id === messageId);
       if (msg) msg.reactions = reactions;
+    },
+    updateMessageEdit: (state, action) => {
+      const { messageId, text, edited, editedAt } = action.payload;
+      const msg = state.messages.find(m => m._id === messageId);
+      if (msg) {
+        msg.text = text;
+        msg.edited = edited;
+        msg.editedAt = editedAt;
+      }
     }
   },
 
@@ -63,7 +72,8 @@ const chatSlice = createSlice({
 export const {
   setSelectedUser,
   addMessage,
-  updateMessageReactions
+  updateMessageReactions,
+  updateMessageEdit
 } = chatSlice.actions;
 
 
@@ -108,6 +118,15 @@ export const reactToMessage = (messageId, emoji) => async (dispatch) => {
   }
 };
 
+export const editMessage = (messageId, text) => async (dispatch) => {
+  try {
+    const res = await axiosInstance.put(`/messages/edit/${messageId}`, { text });
+    dispatch(updateMessageEdit(res.data));
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to edit message");
+  }
+};
+
 export const subscribeToMessages = () => (dispatch, getState) => {
   const { selectedUser } = getState().chat;
   const { socket } = getState().user;
@@ -129,8 +148,13 @@ export const subscribeToMessages = () => (dispatch, getState) => {
     dispatch(updateMessageReactions(data));
   };
 
+  const editListner = (data) => {
+    dispatch(updateMessageEdit(data));
+  };
+
   socket.on("newMessage", messageListener);
   socket.on("messageReaction", reactionListner);
+  socket.on("messageEdited", editListner);
 };
 
 export const unsubscribeFromMessages = () => (dispatch, getState) => {
@@ -139,6 +163,7 @@ export const unsubscribeFromMessages = () => (dispatch, getState) => {
 
   socket.off("newMessage");
   socket.off("messageReaction");
+  socket.off("messageEdited");
 };
 
 
