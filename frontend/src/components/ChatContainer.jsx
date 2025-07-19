@@ -4,14 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import ChatHeader from './ChatHeader';
 import MessageInput from "./MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
-import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply } from '../redux/message/chatSlice';
+import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply, markMessagesAsSeen } from '../redux/message/chatSlice';
 import { formatMessageTime, REACTION_EMOJIS } from '../lib/util.js';
 
 
 const ChatContainer = () => {
   const dispatch = useDispatch();
 
-  const { messages = [], isMessagesLoading, selectedUser } = useSelector((state) => state.chat);
+  const { messages = [], isMessagesLoading, selectedUser, typingBubble } = useSelector((state) => state.chat);
   const { currentUser } = useSelector((state) => state.user);
   const messageEndRef = useRef(null);
   const [editingId, setEditingId] = useState(null);
@@ -20,6 +20,7 @@ const ChatContainer = () => {
   const [pickerFor, setPickerFor] = useState(null);
   const [pickerPos, setPickerPos] = useState({ x: 0, y: 0 });
   const pickerRef = useRef();
+  const theme = useSelector((state) => state.theme.theme);
 
   // Close emoji picker/dropdown on click outside
   useEffect(() => {
@@ -58,6 +59,19 @@ const ChatContainer = () => {
     };
   }, [currentUser, dispatch]);
 
+  // Mark messages as seen when chat is open or messages change 
+  useEffect(() => {
+    if (selectedUser && messages.length > 0) {
+      const unseen = messages.filter(
+        m => m.receiverId === currentUser._id && (!m.seen || !m.seen.includes(currentUser._id))
+      ).map(m => m._id);
+
+      if (unseen.length > 0) {
+        dispatch(markMessagesAsSeen(unseen));
+      }
+    }
+  }, [selectedUser, messages, currentUser, dispatch]);
+
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -74,13 +88,13 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className='flex-1 flex flex-col overflow-auto'>
-      <ChatHeader />
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-        {
-          messages.map((message, index) => {
+    <>
+      {/* Remove any absolute debug box */}
+      <div className='flex-1 flex flex-col'>
+        <ChatHeader />
+        {/* Scrollable chat area: messages + typing bubble + scroll ref */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-4 bg-base-100 transition-colors duration-300">
+          {messages.map((message, index) => {
             const isOwn = message.senderId === currentUser._id;
             const isDeleted = message.text === "Message deleted";
             const myReaction = message.reactions?.find(r => r.userId === currentUser._id);
@@ -114,7 +128,7 @@ const ChatContainer = () => {
                   )}
                 </div>
 
-                <div className="chat-bubble flex flex-col relative group">
+                <div className={`chat-bubble flex flex-col relative group transition-colors duration-300 ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content'}`}>
                   {message.image && (
                     <img
                       src={message.image}
@@ -151,11 +165,36 @@ const ChatContainer = () => {
                           </div>
                         </div>
                       )}
-                      {/* Message text and time in a row, time at right */}
-                      <div className="flex items-end w-full">
+                      {/* Message text and time/tick row at bottom right */}
+                      <div className="flex flex-col w-full relative">
                         <span className={isDeleted ? "italic text-zinc-400" : ""} style={{ flex: '1 1 auto' }}>{message.text}</span>
-                        <span style={{ minWidth: 8 }} />
-                        <span className="text-xs opacity-50 ml-2 whitespace-nowrap" style={{ flex: 'none' }}>{formatMessageTime(message.createdAt)}</span>
+                        {/* Time and ticks row, right-aligned at bottom */}
+                        {isOwn && !isDeleted && (
+                          <span className="flex items-center justify-end gap-1 text-xs opacity-50 mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
+                            <span className="whitespace-nowrap">{formatMessageTime(message.createdAt)}</span>
+                            {message.seen && message.seen.includes(selectedUser._id) ? (
+                              <>
+                                <span title="Seen" className="text-blue-500 dark:text-blue-400" style={{ marginRight: -2 }}>✔</span>
+                                <span title="Seen" className="text-blue-500 dark:text-blue-400 -ml-1">✔</span>
+                              </>
+                            ) : (
+                              message.seen && message.seen.length > 0 ? (
+                                <>
+                                  <span title="Delivered" className="text-zinc-400 dark:text-zinc-500" style={{ marginRight: -2 }}>✔</span>
+                                  <span title="Delivered" className="text-zinc-400 dark:text-zinc-500 -ml-1">✔</span>
+                                </>
+                              ) : (
+                                <span title="Sent" className="text-zinc-400 dark:text-zinc-500">✔</span>
+                              )
+                            )}
+                          </span>
+                        )}
+                        {/* For received messages, just show time bottom right */}
+                        {!isOwn && (
+                          <span className="flex items-center justify-end text-xs opacity-50 mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
+                            <span className="whitespace-nowrap">{formatMessageTime(message.createdAt)}</span>
+                          </span>
+                        )}
                       </div>
                     </>
                   )}
@@ -205,14 +244,51 @@ const ChatContainer = () => {
                 </div>
               </div>
             );
-          })
-        }
-        <div ref={messageEndRef}></div>
+          })}
+          {/* Animated spacer for typing bubble */}
+          <div style={{
+            height: typingBubble ? 56 : 0,
+            transition: 'height 0.2s cubic-bezier(.4,0,.2,1)'
+          }} />
+          {typingBubble && (
+            <div className="chat chat-start typing-bubble-animate typing-bubble-visible">
+              <div className="chat-image avatar">
+                <div className="size-10 rounded-full border">
+                  <img src={selectedUser?.profilePic || "/avatar.png"} alt="profile pic" />
+                </div>
+              </div>
+              <div className="chat-bubble flex flex-col relative group">
+                <span className="flex gap-1 items-center">
+                  typing
+                  <span className="flex gap-0.5">
+                    <span className="dot-typing" style={{ animationDelay: '0ms' }}>.</span>
+                    <span className="dot-typing" style={{ animationDelay: '150ms' }}>.</span>
+                    <span className="dot-typing" style={{ animationDelay: '300ms' }}>.</span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
+          <div ref={messageEndRef}></div>
+        </div>
+        <MessageInput />
       </div>
-
-      <MessageInput />
-    </div>
+    </>
   );
 };
 
 export default ChatContainer;
+
+<style>
+  {`
+.typing-bubble-animate {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
+}
+.typing-bubble-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+  `}
+</style>;
