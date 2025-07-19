@@ -11,7 +11,7 @@ const initialState = {
   isUsersLoading: false,
   isMessagesLoading: false,
   reply: null,
-  typingUser: null, // userId of the user who is typing
+  typingUsers: {}, // { [userId]: true/false }
   typingBubble: null
 };
 
@@ -23,6 +23,7 @@ const chatSlice = createSlice({
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
       state.messages = [];
+      state.typingBubble = null; // Only clear typing bubble when switching chats
     },
     addMessage: (state, action) => {
       state.messages.push(action.payload);
@@ -58,20 +59,22 @@ const chatSlice = createSlice({
       state.reply = null;
     },
     setTypingUser: (state, action) => {
-      state.typingUser = action.payload;
+      if (!state.typingUsers) state.typingUsers = {};
+      state.typingUsers[action.payload] = true;
     },
-    clearTypingUser: (state) => {
-      state.typingUser = null;
+    clearTypingUser: (state, action) => {
+      if (!state.typingUsers) state.typingUsers = {};
+      if (action && action.payload) {
+        delete state.typingUsers[action.payload];
+      } else {
+        state.typingUsers = {};
+      }
     },
     updateMessagesSeen: (state, action) => {
       const { messageIds, by } = action.payload;
-
       state.messages.forEach(msg => {
-
         if (messageIds.includes(msg._id)) {
-
           if (!msg.seen) msg.seen = [];
-
           if (!msg.seen.includes(by)) msg.seen.push(by);
         }
       });
@@ -190,12 +193,16 @@ export const deleteMessage = (messageId) => async (dispatch) => {
 export const sendTyping = (to) => (dispatch, getState) => {
   const { socket } = getState().user;
 
-  if (socket) socket.emit("typing", { to });
+  if (socket) {
+    socket.emit("typing", { to });
+  }
 };
 
 export const sendStopTyping = (to) => (dispatch, getState) => {
   const { socket } = getState().user;
-  if (socket) socket.emit("stopTyping", { to });
+  if (socket) {
+    socket.emit("stopTyping", { to });
+  }
 };
 
 export const markMessagesAsSeen = (messageIds) => async (dispatch, getState) => {
@@ -214,7 +221,7 @@ export const markMessagesAsSeen = (messageIds) => async (dispatch, getState) => 
 export const subscribeToMessages = () => (dispatch, getState) => {
   const { selectedUser } = getState().chat;
   const { socket, currentUser } = getState().user;
-  if (!selectedUser || !socket) return;
+  if (!socket) return;
 
   // Remove existing listener before adding a new one
   socket.off("newMessage");
@@ -226,7 +233,7 @@ export const subscribeToMessages = () => (dispatch, getState) => {
   socket.off("messageSeen");
 
   const messageListener = (newMessage) => {
-    if (newMessage.senderId === selectedUser._id) {
+    if (selectedUser && newMessage.senderId === selectedUser._id) {
       dispatch(addMessage(newMessage));
       dispatch(removeTypingBubble()); // removing typing bubble on new message
     }
@@ -245,20 +252,31 @@ export const subscribeToMessages = () => (dispatch, getState) => {
   };
 
   const typingListener = (data) => {
+    // Always set typing for this user (for sidebar/header)
     dispatch(setTypingUser(data.from));
-
-    // add typing bubble
-    dispatch(addTypingBubble({
-      _id: 'typing',
-      senderId: data.from,
-      receiverId: currentUser._id,
-      isTyping: true
-    }));
+    // Only show typing bubble if the event is from the currently selected user
+    const { selectedUser } = getState().chat;
+    const { currentUser } = getState().user;
+    if (selectedUser && data.from === selectedUser._id) {
+      dispatch(addTypingBubble({
+        _id: 'typing',
+        senderId: data.from,
+        receiverId: currentUser._id,
+        isTyping: true
+      }));
+    }
   };
 
-  const stopTypingListener = () => {
-    dispatch(clearTypingUser());
-    dispatch(removeTypingBubble());
+  const stopTypingListener = (data) => {
+    // Always clear typing for this user (for sidebar/header)
+    if (data && data.from) {
+      dispatch(clearTypingUser(data.from));
+    }
+    // Only remove typing bubble if the event is from the currently selected user
+    const { selectedUser } = getState().chat;
+    if (selectedUser && data && data.from === selectedUser._id) {
+      dispatch(removeTypingBubble());
+    }
   };
 
   const seenListener = (data) => {
@@ -282,6 +300,9 @@ export const unsubscribeFromMessages = () => (dispatch, getState) => {
   socket.off("messageReaction");
   socket.off("messageEdited");
   socket.off("messageDeleted");
+  socket.off("typing"); // Ensure typing event is removed
+  socket.off("stopTyping"); // Ensure stopTyping event is removed
+  socket.off("messageSeen");
 };
 
 

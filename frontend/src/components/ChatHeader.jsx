@@ -8,7 +8,7 @@ import { setSelectedUser } from '../redux/message/chatSlice';
 const ChatHeader = () => {
   const dispatch = useDispatch();
 
-  const { selectedUser, typingUser } = useSelector((state) => state.chat);
+  const { selectedUser, typingUsers = {} } = useSelector((state) => state.chat);
   const onlineUsers = useSelector((state) => state.user?.onlineUsers) || [];
 
   return (
@@ -30,7 +30,7 @@ const ChatHeader = () => {
           <div>
             <h3 className="font-medium">{selectedUser.fullName}</h3>
             <p className='text-sm text-base-content/70 h-5 flex items-center'>
-              {typingUser === selectedUser._id ? (
+              {typingUsers[selectedUser._id] ? (
                 <span className="flex items-center gap-1">typing
                   <span className="flex gap-0.5 ml-1">
                     <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>

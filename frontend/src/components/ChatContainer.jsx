@@ -37,25 +37,19 @@ const ChatContainer = () => {
   useEffect(() => {
     if (selectedUser?._id) {
       dispatch(getMessages(selectedUser._id));
-
-      dispatch(unsubscribeFromMessages());
-      dispatch(subscribeToMessages(selectedUser._id));
     }
-
     return () => {
-      dispatch(unsubscribeFromMessages());
+      // Remove all subscribeToMessages and unsubscribeFromMessages logic from this file
     };
-
   }, [selectedUser, dispatch]);
 
-  // 🔹 NEW: Subscribe on page reload when currentUser is available
+  // Restore: Subscribe globally when currentUser is set
   useEffect(() => {
     if (currentUser?._id) {
-      dispatch(subscribeToMessages());
+      // Remove all subscribeToMessages and unsubscribeFromMessages logic from this file
     }
-
     return () => {
-      dispatch(unsubscribeFromMessages());
+      // Remove all subscribeToMessages and unsubscribeFromMessages logic from this file
     };
   }, [currentUser, dispatch]);
 
@@ -75,7 +69,7 @@ const ChatContainer = () => {
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typingBubble]);
 
   if (isMessagesLoading) {
     return (
@@ -94,7 +88,36 @@ const ChatContainer = () => {
         <ChatHeader />
         {/* Scrollable chat area: messages + typing bubble + scroll ref */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-4 bg-base-100 transition-colors duration-300">
-          {messages.map((message, index) => {
+          {[
+            ...messages,
+            typingBubble && typingBubble.senderId !== currentUser._id
+              ? { _id: 'typing-bubble', isTypingBubble: true }
+              : null
+          ].filter(Boolean).map((message, index) => {
+            if (message.isTypingBubble) {
+              return (
+                <div
+                  key="typing-bubble"
+                  className="chat chat-start typing-bubble-animate typing-bubble-visible"
+                >
+                  <div className="chat-image avatar">
+                    <div className="size-10 rounded-full border">
+                      <img src={selectedUser?.profilePic || "/avatar.png"} alt="profile pic" />
+                    </div>
+                  </div>
+                  <div className="chat-bubble flex flex-col relative group">
+                    <span className="flex gap-1 items-center">
+                      typing
+                      <span className="flex gap-0.5">
+                        <span className="dot-typing" style={{ animationDelay: '0ms' }}>.</span>
+                        <span className="dot-typing" style={{ animationDelay: '150ms' }}>.</span>
+                        <span className="dot-typing" style={{ animationDelay: '300ms' }}>.</span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              );
+            }
             const isOwn = message.senderId === currentUser._id;
             const isDeleted = message.text === "Message deleted";
             const myReaction = message.reactions?.find(r => r.userId === currentUser._id);
@@ -245,30 +268,6 @@ const ChatContainer = () => {
               </div>
             );
           })}
-          {/* Animated spacer for typing bubble */}
-          <div style={{
-            height: typingBubble ? 56 : 0,
-            transition: 'height 0.2s cubic-bezier(.4,0,.2,1)'
-          }} />
-          {typingBubble && (
-            <div className="chat chat-start typing-bubble-animate typing-bubble-visible">
-              <div className="chat-image avatar">
-                <div className="size-10 rounded-full border">
-                  <img src={selectedUser?.profilePic || "/avatar.png"} alt="profile pic" />
-                </div>
-              </div>
-              <div className="chat-bubble flex flex-col relative group">
-                <span className="flex gap-1 items-center">
-                  typing
-                  <span className="flex gap-0.5">
-                    <span className="dot-typing" style={{ animationDelay: '0ms' }}>.</span>
-                    <span className="dot-typing" style={{ animationDelay: '150ms' }}>.</span>
-                    <span className="dot-typing" style={{ animationDelay: '300ms' }}>.</span>
-                  </span>
-                </span>
-              </div>
-            </div>
-          )}
           <div ref={messageEndRef}></div>
         </div>
         <MessageInput />

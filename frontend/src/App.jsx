@@ -15,8 +15,10 @@ import ForgetPasswordPage from './pages/ForgetPassword';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import ProfilePage from './pages/ProfilePage';
+import { subscribeToMessages, unsubscribeFromMessages } from "./redux/message/chatSlice";
 
 const App = () => {
+  const socket = useSelector((state) => state.user.socket);
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -31,6 +33,15 @@ const App = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (socket) {
+      dispatch(subscribeToMessages());
+      return () => {
+        dispatch(unsubscribeFromMessages());
+      };
+    }
+  }, [socket, dispatch]);
 
   if (isCheckingAuth && !currentUser) {
     return (

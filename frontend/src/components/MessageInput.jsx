@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -15,6 +15,15 @@ const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Cleanup: send stopTyping when unmounting or switching user
+  useEffect(() => {
+    return () => {
+      if (selectedUser?._id) {
+        dispatch(sendStopTyping(selectedUser._id));
+      }
+    };
+  }, [selectedUser, dispatch]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -43,7 +52,7 @@ const MessageInput = () => {
       if (typingTimeout) clearTimeout(typingTimeout);
       setTypingTimeout(setTimeout(() => {
         dispatch(sendStopTyping(selectedUser._id));
-      }, 1000));
+      }, 3000)); // Increased from 1000ms to 3000ms
     }
   };
 

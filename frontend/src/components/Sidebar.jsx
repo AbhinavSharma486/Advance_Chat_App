@@ -9,7 +9,7 @@ import { getUsers, setSelectedUser } from '../redux/message/chatSlice';
 const Sidebar = () => {
   const dispatch = useDispatch();
 
-  const { users, selectedUser, isUsersLoading, typingUser } = useSelector((state) => state.chat);
+  const { users, selectedUser, isUsersLoading, typingUsers = {} } = useSelector((state) => state.chat);
   const { onlineUsers = [] } = useSelector((state) => state.user || {});
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -77,7 +77,7 @@ const Sidebar = () => {
               <div className="hidden lg:block md:block text-left min-w-0">
                 <div className="font-medium truncate">{user.fullName}</div>
                 <div className="text-sm text-zinc-400 h-5 flex items-center">
-                  {typingUser === user._id ? (
+                  {typingUsers[user._id] ? (
                     <span className="flex items-center gap-1">typing
                       <span className="flex gap-0.5 ml-1">
                         <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>
