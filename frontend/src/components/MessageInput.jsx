@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { sendMessage, clearReply } from '../redux/message/chatSlice.js';
+import { sendMessage, clearReply, sendTyping, sendStopTyping } from '../redux/message/chatSlice.js';
 
 
 const MessageInput = () => {
   const dispatch = useDispatch();
   const reply = useSelector(state => state.chat.reply);
+  const { selectedUser } = useSelector(state => state.chat);
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
@@ -31,6 +33,18 @@ const MessageInput = () => {
   const removeImage = () => {
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleTyping = (e) => {
+    setText(e.target.value);
+
+    if (selectedUser?._id) {
+      dispatch(sendTyping(selectedUser._id));
+      if (typingTimeout) clearTimeout(typingTimeout);
+      setTypingTimeout(setTimeout(() => {
+        dispatch(sendStopTyping(selectedUser._id));
+      }, 1000));
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -98,7 +112,7 @@ const MessageInput = () => {
             className='w-full input input-bordered rounded-lg input-sm sm:input-md'
             placeholder='Type a message...'
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTyping}
           />
 
           <input
