@@ -209,3 +209,24 @@ export const deleteMessage = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const markMessagesAsSeen = async (req, res) => {
+  try {
+    const { messageIds } = req.body;
+    const userId = req.user.id;
+
+    if (!Array.isArray(messageIds) || messageIds.length === 0) {
+      return res.status(400).json({ message: "No message Ids provided" });
+    }
+
+    await Message.updateMany(
+      { _id: { $in: messageIds }, seen: { $ne: userId } },
+      { $push: { seen: userId }, $set: { seenAt: new Date() } }
+    );
+
+    res.status(200).json({ message: "Messages marked as seen" });
+  } catch (error) {
+    console.log("Error in markMessagesAsSeen controller", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
