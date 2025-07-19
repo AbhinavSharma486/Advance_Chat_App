@@ -15,7 +15,7 @@ const initialState = {
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
-  onlineUsers: [],
+  onlineUsers: [], // [{ userId, onlineAt }]
   socket: null
 };
 
@@ -135,7 +135,7 @@ const userSlice = createSlice({
       state.error = action.payload;
     },
     setOnlineUsers: (state, action) => {
-      state.onlineUsers = action.payload;
+      state.onlineUsers = action.payload; // [{ userId, onlineAt }]
     },
     connectSocket: (state, action) => {
       state.socket = action.payload;
@@ -357,8 +357,8 @@ export const connectSocketThunk = () => async (dispatch, getState) => {
     console.log("Socket disconnected");
   });
 
-  newSocket.on("getOnlineUsers", (userIds) => {
-    dispatch(setOnlineUsers(userIds));
+  newSocket.on("getOnlineUsers", (onlineUsers) => {
+    dispatch(setOnlineUsers(onlineUsers));
   });
 
   dispatch(connectSocket(newSocket)); // Store socket in Redux

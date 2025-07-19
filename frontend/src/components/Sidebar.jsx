@@ -18,7 +18,23 @@ const Sidebar = () => {
     dispatch(getUsers());
   }, [dispatch]);
 
-  const filteredUsers = showOnlineOnly ? users.filter(user => onlineUsers.includes(user._id)) : users;
+  // Map for quick lookup
+  const onlineUserMap = Object.fromEntries(onlineUsers.map(u => [u.userId, u.onlineAt]));
+  // Sort users: online at top (by onlineAt desc), then offline
+  const sortedUsers = [...users].sort((a, b) => {
+    const aOnline = onlineUserMap[a._id];
+    const bOnline = onlineUserMap[b._id];
+    if (aOnline && bOnline) {
+      return bOnline - aOnline; // Most recent online first
+    } else if (aOnline) {
+      return -1;
+    } else if (bOnline) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  const filteredUsers = showOnlineOnly ? sortedUsers.filter(user => onlineUserMap[user._id]) : sortedUsers;
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
@@ -42,7 +58,7 @@ const Sidebar = () => {
             />
             <span className="text-sm">Show online only</span>
           </label>
-          <span className="text-sm text-zinc-500">({onlineUsers.length - 1} online)</span>
+          <span className="text-sm text-zinc-500">({onlineUsers.length > 0 ? onlineUsers.length - 1 : 0} online)</span>
         </div>
 
       </div>
@@ -65,7 +81,7 @@ const Sidebar = () => {
                   className="size-12 object-cover rounded-full"
                 />
                 {
-                  onlineUsers.includes(user._id) && (
+                  onlineUserMap[user._id] && (
                     <span
                       className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900"
                     />
@@ -86,7 +102,7 @@ const Sidebar = () => {
                       </span>
                     </span>
                   ) : (
-                    onlineUsers.includes(user._id) ? "Online" : "Offline"
+                    onlineUserMap[user._id] ? "Online" : "Offline"
                   )}
                 </div>
               </div>
