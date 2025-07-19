@@ -41,6 +41,28 @@ io.on("connection", (socket) => {
       io.emit("getOnlineUsers", Object.keys(userSocketMap)); // Notify all users
     }
   });
+
+  // Typing indicator 
+  socket.on("typing", ({ to }) => {
+    const receiverSocketId = userSocketMap[to];
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("typing", { from: userId });
+    }
+  });
+
+  socket.on("stopTyping", ({ to }) => {
+    const receiverSocketId = userSocketMap[to];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("stopTyping", { from: userId });
+    }
+  });
+
+  // Read receipts
+  socket.on("messageSeen", ({ messageIds, by }) => {
+    // messageIds: array of message _id, by: userId who saw
+    io.emit("messageSeen", { messageIds, by });
+  });
 });
 
 export { io, app, server };
