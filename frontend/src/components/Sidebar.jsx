@@ -9,7 +9,7 @@ import { getUsers, setSelectedUser } from '../redux/message/chatSlice';
 const Sidebar = () => {
   const dispatch = useDispatch();
 
-  const { users, selectedUser, isUsersLoading } = useSelector((state) => state.chat);
+  const { users, selectedUser, isUsersLoading, typingUser } = useSelector((state) => state.chat);
   const { onlineUsers = [] } = useSelector((state) => state.user || {});
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -76,10 +76,18 @@ const Sidebar = () => {
               { /* User info - only visible on larger screens */}
               <div className="hidden lg:block md:block text-left min-w-0">
                 <div className="font-medium truncate">{user.fullName}</div>
-                <div className="text-sm text-zinc-400">
-                  {
+                <div className="text-sm text-zinc-400 h-5 flex items-center">
+                  {typingUser === user._id ? (
+                    <span className="flex items-center gap-1">typing
+                      <span className="flex gap-0.5 ml-1">
+                        <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>
+                        <span className="dot-typing-header" style={{ animationDelay: '150ms' }}>.</span>
+                        <span className="dot-typing-header" style={{ animationDelay: '300ms' }}>.</span>
+                      </span>
+                    </span>
+                  ) : (
                     onlineUsers.includes(user._id) ? "Online" : "Offline"
-                  }
+                  )}
                 </div>
               </div>
             </button>
@@ -96,4 +104,20 @@ const Sidebar = () => {
     </aside>
   );
 };
+
 export default Sidebar;
+
+<style>
+  {`
+  .dot-typing-header {
+    display: inline-block;
+    font-size: 1.2em;
+    opacity: 0.7;
+    animation: typing-bounce-header 1s infinite both;
+  }
+  @keyframes typing-bounce-header {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.7; }
+    40% { transform: translateY(-4px); opacity: 1; }
+  }
+  `}
+</style>;

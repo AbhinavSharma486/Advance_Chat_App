@@ -8,7 +8,7 @@ import { setSelectedUser } from '../redux/message/chatSlice';
 const ChatHeader = () => {
   const dispatch = useDispatch();
 
-  const { selectedUser } = useSelector((state) => state.chat);
+  const { selectedUser, typingUser } = useSelector((state) => state.chat);
   const onlineUsers = useSelector((state) => state.user?.onlineUsers) || [];
 
   return (
@@ -29,10 +29,18 @@ const ChatHeader = () => {
           {/* User info */}
           <div>
             <h3 className="font-medium">{selectedUser.fullName}</h3>
-            <p className='text-sm text-base-content/70'>
-              {
+            <p className='text-sm text-base-content/70 h-5 flex items-center'>
+              {typingUser === selectedUser._id ? (
+                <span className="flex items-center gap-1">typing
+                  <span className="flex gap-0.5 ml-1">
+                    <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>
+                    <span className="dot-typing-header" style={{ animationDelay: '150ms' }}>.</span>
+                    <span className="dot-typing-header" style={{ animationDelay: '300ms' }}>.</span>
+                  </span>
+                </span>
+              ) : (
                 onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"
-              }
+              )}
             </p>
           </div>
         </div>
@@ -41,10 +49,25 @@ const ChatHeader = () => {
         <button onClick={() => dispatch(setSelectedUser(null))}>
           <X />
         </button>
-        
+
       </div>
     </div>
   );
 };
 
 export default ChatHeader;
+
+<style>
+  {`
+  .dot-typing-header {
+    display: inline-block;
+    font-size: 1.2em;
+    opacity: 0.7;
+    animation: typing-bounce-header 1s infinite both;
+  }
+  @keyframes typing-bounce-header {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.7; }
+    40% { transform: translateY(-4px); opacity: 1; }
+  }
+  `}
+</style>;
