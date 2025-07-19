@@ -33,7 +33,11 @@ const ChatHeader = ({ onOpenDatePicker }) => {
             <h3 className="font-medium">{selectedUser.fullName}</h3>
             <p className='text-sm text-base-content/70 h-5 flex items-center'>
               {typingUsers[selectedUser._id] ? (
-                <span className="flex items-center gap-1">typing
+                <span className="flex items-center gap-1">
+                  {onlineUserMap[selectedUser._id] && (
+                    <span className="inline-block w-3 h-3 rounded-full bg-green-500 ring-2 ring-zinc-900" title="Online"></span>
+                  )}
+                  typing
                   <span className="flex gap-0.5 ml-1">
                     <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>
                     <span className="dot-typing-header" style={{ animationDelay: '150ms' }}>.</span>
@@ -41,7 +45,12 @@ const ChatHeader = ({ onOpenDatePicker }) => {
                   </span>
                 </span>
               ) : (
-                onlineUserMap[selectedUser._id] ? "Online" : "Offline"
+                <span className="flex items-center gap-1">
+                  {onlineUserMap[selectedUser._id] && (
+                    <span className="inline-block w-3 h-3 rounded-full bg-green-500 ring-2 ring-zinc-900" title="Online"></span>
+                  )}
+                  {onlineUserMap[selectedUser._id] ? "Online" : "Offline"}
+                </span>
               )}
             </p>
           </div>
