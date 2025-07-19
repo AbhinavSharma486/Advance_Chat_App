@@ -10,6 +10,8 @@ const ChatHeader = ({ onOpenDatePicker }) => {
 
   const { selectedUser, typingUsers = {} } = useSelector((state) => state.chat);
   const onlineUsers = useSelector((state) => state.user?.onlineUsers) || [];
+  // Map for quick lookup
+  const onlineUserMap = Object.fromEntries(onlineUsers.map(u => [u.userId, u.onlineAt]));
 
   return (
     <div className='p-2.5 border-b border-base-300'>
@@ -39,7 +41,7 @@ const ChatHeader = ({ onOpenDatePicker }) => {
                   </span>
                 </span>
               ) : (
-                onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"
+                onlineUserMap[selectedUser._id] ? "Online" : "Offline"
               )}
             </p>
           </div>
