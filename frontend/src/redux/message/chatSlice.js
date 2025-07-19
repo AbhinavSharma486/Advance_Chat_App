@@ -10,7 +10,9 @@ const initialState = {
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
-  reply: null
+  reply: null,
+  typingUser: null, // userId of the user who is typing
+  typingBubble: null
 };
 
 // Reducers 
@@ -54,6 +56,31 @@ const chatSlice = createSlice({
     },
     clearReply: (state) => {
       state.reply = null;
+    },
+    setTypingUser: (state, action) => {
+      state.typingUser = action.payload;
+    },
+    clearTypingUser: (state) => {
+      state.typingUser = null;
+    },
+    updateMessagesSeen: (state, action) => {
+      const { messageIds, by } = action.payload;
+
+      state.messages.forEach(msg => {
+
+        if (messageIds.includes(msg._id)) {
+
+          if (!msg.seen) msg.seen = [];
+
+          if (!msg.seen.includes(by)) msg.seen.push(by);
+        }
+      });
+    },
+    addTypingBubble: (state, action) => {
+      state.typingBubble = action.payload;
+    },
+    removeTypingBubble: (state) => {
+      state.typingBubble = null;
     }
   },
 
@@ -92,7 +119,12 @@ export const {
   updateMessageEdit,
   updateMessageDelete,
   setReply,
-  clearReply
+  clearReply,
+  setTypingUser,
+  clearTypingUser,
+  updateMessagesSeen,
+  addTypingBubble,
+  removeTypingBubble
 } = chatSlice.actions;
 
 
@@ -155,9 +187,33 @@ export const deleteMessage = (messageId) => async (dispatch) => {
   }
 };
 
+export const sendTyping = (to) => (dispatch, getState) => {
+  const { socket } = getState().user;
+
+  if (socket) socket.emit("typing", { to });
+};
+
+export const sendStopTyping = (to) => (dispatch, getState) => {
+  const { socket } = getState().user;
+  if (socket) socket.emit("stopTyping", { to });
+};
+
+export const markMessagesAsSeen = (messageIds) => async (dispatch, getState) => {
+  const { socket } = getState().user;
+  const { currentUser } = getState().user;
+
+  try {
+    await axiosInstance.post("/messages/seen", { messageIds });
+    if (socket) socket.emit("messageSeen", { messageIds, by: currentUser._id });
+    dispatch(updateMessagesSeen({ messageIds, by: currentUser._id }));
+  } catch (error) {
+    toast.error(error.response || "Failed to mark messages as seen");
+  }
+};
+
 export const subscribeToMessages = () => (dispatch, getState) => {
   const { selectedUser } = getState().chat;
-  const { socket } = getState().user;
+  const { socket, currentUser } = getState().user;
   if (!selectedUser || !socket) return;
 
   // Remove existing listener before adding a new one
@@ -165,10 +221,14 @@ export const subscribeToMessages = () => (dispatch, getState) => {
   socket.off("messageReaction");
   socket.off("messageEdited");
   socket.off("messageDeleted");
+  socket.off("typing");
+  socket.off("stopTyping");
+  socket.off("messageSeen");
 
   const messageListener = (newMessage) => {
     if (newMessage.senderId === selectedUser._id) {
       dispatch(addMessage(newMessage));
+      dispatch(removeTypingBubble()); // removing typing bubble on new message
     }
   };
 
@@ -184,10 +244,34 @@ export const subscribeToMessages = () => (dispatch, getState) => {
     dispatch(updateMessageDelete(data));
   };
 
+  const typingListener = (data) => {
+    dispatch(setTypingUser(data.from));
+
+    // add typing bubble
+    dispatch(addTypingBubble({
+      _id: 'typing',
+      senderId: data.from,
+      receiverId: currentUser._id,
+      isTyping: true
+    }));
+  };
+
+  const stopTypingListener = () => {
+    dispatch(clearTypingUser());
+    dispatch(removeTypingBubble());
+  };
+
+  const seenListener = (data) => {
+    dispatch(updateMessagesSeen(data));
+  };
+
   socket.on("newMessage", messageListener);
   socket.on("messageReaction", reactionListner);
   socket.on("messageEdited", editListner);
   socket.on("messageDeleted", deleteListner);
+  socket.on("typing", typingListener);
+  socket.on("stopTyping", stopTypingListener);
+  socket.on("messageSeen", seenListener);
 };
 
 export const unsubscribeFromMessages = () => (dispatch, getState) => {
