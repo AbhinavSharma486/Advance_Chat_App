@@ -1,11 +1,11 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { X } from 'lucide-react';
+import { X, Calendar } from 'lucide-react';
 
 import { setSelectedUser } from '../redux/message/chatSlice';
 
 
-const ChatHeader = () => {
+const ChatHeader = ({ onOpenDatePicker }) => {
   const dispatch = useDispatch();
 
   const { selectedUser, typingUsers = {} } = useSelector((state) => state.chat);
@@ -44,12 +44,16 @@ const ChatHeader = () => {
             </p>
           </div>
         </div>
-
-        {/* Close button */}
-        <button onClick={() => dispatch(setSelectedUser(null))}>
-          <X />
-        </button>
-
+        <div className="flex items-center gap-2">
+          {/* Calendar button */}
+          <button onClick={onOpenDatePicker} title="Jump to date" className="btn btn-ghost btn-sm">
+            <Calendar className="size-5" />
+          </button>
+          {/* Close button */}
+          <button onClick={() => dispatch(setSelectedUser(null))}>
+            <X />
+          </button>
+        </div>
       </div>
     </div>
   );
