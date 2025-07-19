@@ -31,7 +31,9 @@ export const getMessages = async (req, res) => {
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId }
       ]
-    });
+    }).populate([
+      { path: 'replyTo', select: 'text image senderId', populate: { path: 'senderId', select: 'fullName _id' } }
+    ]);
 
     res.status(200).json(messages);
 
@@ -44,7 +46,7 @@ export const getMessages = async (req, res) => {
 export const sendMessage = async (req, res) => {
 
   try {
-    const { text, image } = req.body;
+    const { text, image, replyTo } = req.body;
 
     const { id: receiverId } = req.params;
 
@@ -62,9 +64,14 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
+      replyTo: replyTo || null,
     });
 
     await newMessage.save();
+
+    await newMessage.populate([
+      { path: 'replyTo', select: 'text image senderId', populate: { path: 'senderId', select: 'fullName _id' } }
+    ]);
 
     // realtime functionality goes here -> socket.io
     const receiverSocketIds = getReceiverSocketId(receiverId);

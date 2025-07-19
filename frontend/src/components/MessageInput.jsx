@@ -65,6 +65,7 @@ const MessageInput = () => {
       dispatch(sendMessage({
         text: text.trim(),
         image: imagePreview,
+        replyTo: reply?._id || null,
       }));
 
       // clear form
