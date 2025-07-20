@@ -24,7 +24,7 @@ const LeftSideOfSignUpAndLoginPage = ({ title, subtitle, mode }) => {
               : "";
 
   return (
-    <div className="hidden lg:flex flex-col items-center justify-center bg-base-200 p-12">
+    <div className="hidden lg:flex flex-col items-center justify-center bg-base-200 p-12 h-full w-full">
       <div className="max-w-md text-center flex flex-col items-center">
 
         {/* Fixed-size Image Container */}
@@ -41,7 +41,7 @@ const LeftSideOfSignUpAndLoginPage = ({ title, subtitle, mode }) => {
         {/* Title and Subtitle */}
         <h2 className="text-2xl font-bold mb-4">{title}</h2>
         <p className="text-base-content/60">{subtitle}</p>
-        
+
       </div>
     </div>
   );
