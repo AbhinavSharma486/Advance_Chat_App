@@ -111,15 +111,18 @@ const userSlice = createSlice({
     updateProfileStart: (state) => {
       state.loading = true;
       state.error = null;
+      state.isUpdatingProfile = true;
     },
     updateProfileSuccess: (state, action) => {
       state.loading = false;
       state.error = null;
       state.currentUser = action.payload;
+      state.isUpdatingProfile = false;
     },
     updateProfileFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
+      state.isUpdatingProfile = false;
     },
     deleteProfileStart: (state) => {
       state.loading = true;

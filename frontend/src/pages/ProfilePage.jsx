@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye, X } from "lucide-react";
+import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye, X, Loader2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -12,16 +12,19 @@ const ProfilePage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { currentUser } = useSelector((state) => state.user);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const { currentUser, isUpdatingProfile } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setAvatarLoading(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImg(reader.result);
+        setTimeout(() => setAvatarLoading(false), 800); // Simulate loading for better UX
       };
       reader.readAsDataURL(file);
     }
@@ -68,7 +71,13 @@ const ProfilePage = () => {
                 src={selectedImg || currentUser?.profilePic || "/avatar.png"}
                 alt="Profile"
                 className="size-32 rounded-full object-cover border-4"
+                style={{ opacity: avatarLoading ? 0.5 : 1 }}
               />
+              {avatarLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-full">
+                  <Loader2 className="w-10 h-10 text-white animate-spin" />
+                </div>
+              )}
               <label
                 htmlFor="avatar-upload"
                 className="absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200"
@@ -80,6 +89,7 @@ const ProfilePage = () => {
                   className="hidden"
                   accept="image/*"
                   onChange={handleImageUpload}
+                  disabled={avatarLoading}
                 />
               </label>
             </div>
@@ -145,9 +155,17 @@ const ProfilePage = () => {
 
           <button
             onClick={handleUpdateProfile}
-            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-all"
+            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-all flex items-center justify-center gap-2"
+            disabled={isUpdatingProfile}
           >
-            Update Profile
+            {isUpdatingProfile ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Profile"
+            )}
           </button>
 
           <button
