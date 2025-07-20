@@ -3,20 +3,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { Users } from 'lucide-react';
 
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { getUsers, setSelectedUser } from '../redux/message/chatSlice';
+import { getUsers, setSelectedUser, getLastMessagesForSidebar } from '../redux/message/chatSlice';
 import { getAvatarUrl } from '../lib/util';
 
 
-const Sidebar = () => {
+const Sidebar = ({ setShowMobileChat }) => {
   const dispatch = useDispatch();
 
-  const { users, selectedUser, isUsersLoading, typingUsers = {} } = useSelector((state) => state.chat);
+  const { users, selectedUser, isUsersLoading, typingUsers = {}, sidebarLastMessages } = useSelector((state) => state.chat);
   const { onlineUsers = [] } = useSelector((state) => state.user || {});
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   useEffect(() => {
     dispatch(getUsers());
+    dispatch(getLastMessagesForSidebar());
   }, [dispatch]);
 
   // Map for quick lookup
@@ -35,12 +36,39 @@ const Sidebar = () => {
       return 0;
     }
   });
-  const filteredUsers = showOnlineOnly ? sortedUsers.filter(user => onlineUserMap[user._id]) : sortedUsers;
+  let filteredUsers = showOnlineOnly ? sortedUsers.filter(user => onlineUserMap[user._id]) : sortedUsers;
+  // Sort by last message time (desc), users with no message at bottom
+  filteredUsers = [...filteredUsers].sort((a, b) => {
+    const aMsg = sidebarLastMessages?.[a._id];
+    const bMsg = sidebarLastMessages?.[b._id];
+    if (!aMsg && !bMsg) return 0;
+    if (!aMsg) return 1;
+    if (!bMsg) return -1;
+    return new Date(bMsg.createdAt) - new Date(aMsg.createdAt);
+  });
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
+  // Helper to format time (e.g. 12:34 PM)
+  function formatLastMsgTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+    if (isToday) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    } else if (isYesterday) {
+      return 'Yesterday';
+    } else {
+      return d.toLocaleDateString('en-GB'); // dd/mm/yyyy
+    }
+  }
+
   return (
-    <aside className="h-full w-20 lg:w-72 md:w-52 border-r border-base-300 flex flex-col transition-all duration-200">
+    <aside className="h-full w-full sm:w-64 md:w-52 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200 flex-shrink-0">
       <div className="border-b border-base-300 w-full p-5">
 
         <div className="flex items-center gap-2">
@@ -66,50 +94,63 @@ const Sidebar = () => {
 
       <div className="overflow-y-auto w-full py-3">
         {
-          filteredUsers.map((user) => (
-            <button
-              key={user._id}
-              onClick={() => dispatch(setSelectedUser(user))}
-              className={`
-                w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors
-                ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
+          filteredUsers.map((user) => {
+            // Use sidebarLastMessages for preview
+            const lastMsg = sidebarLastMessages?.[user._id] || null;
+            return (
+              <button
+                key={user._id}
+                onClick={() => {
+                  dispatch(setSelectedUser(user));
+                  if (setShowMobileChat && window.innerWidth < 768) {
+                    setShowMobileChat(true);
+                  }
+                }}
+                className={`
+                  w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors
+                  ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
                 `}
-            >
-              <div className="relative mx-auto lg:mx-0 md:mx-0">
-                <img
-                  src={getAvatarUrl(user.profilePic)}
-                  alt={user.name}
-                  className="size-12 object-cover rounded-full"
-                  onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }}
-                />
-                {
-                  onlineUserMap[user._id] && (
-                    <span
-                      className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900"
-                    />
-                  )
-                }
-              </div>
-
-              { /* User info - only visible on larger screens */}
-              <div className="hidden lg:block md:block text-left min-w-0">
-                <div className="font-medium truncate">{user.fullName}</div>
-                <div className="text-sm text-zinc-400 h-5 flex items-center">
-                  {typingUsers[user._id] ? (
-                    <span className="flex items-center gap-1">typing
-                      <span className="flex gap-0.5 ml-1">
-                        <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>
-                        <span className="dot-typing-header" style={{ animationDelay: '150ms' }}>.</span>
-                        <span className="dot-typing-header" style={{ animationDelay: '300ms' }}>.</span>
-                      </span>
-                    </span>
-                  ) : (
-                    onlineUserMap[user._id] ? "Online" : "Offline"
+              >
+                {/* Avatar */}
+                <div className="relative mx-auto lg:mx-0 md:mx-0 flex-shrink-0">
+                  <img
+                    src={getAvatarUrl(user.profilePic)}
+                    alt={user.name}
+                    className="size-12 object-cover rounded-full"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }}
+                  />
+                  {onlineUserMap[user._id] && (
+                    <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
                   )}
                 </div>
-              </div>
-            </button>
-          ))
+                {/* WhatsApp style row layout for all screens, responsive spacing */}
+                <div className="flex flex-1 min-w-0 flex-row items-center justify-between text-left">
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="font-medium truncate text-base sm:text-sm">{user.fullName}</span>
+                    <span className="text-xs text-zinc-400 h-5 flex items-center min-w-0">
+                      {typingUsers[user._id] ? (
+                        <span className="flex items-center gap-1">typing
+                          <span className="flex gap-0.5 ml-1">
+                            <span className="dot-typing-header" style={{ animationDelay: '0ms' }}>.</span>
+                            <span className="dot-typing-header" style={{ animationDelay: '150ms' }}>.</span>
+                            <span className="dot-typing-header" style={{ animationDelay: '300ms' }}>.</span>
+                          </span>
+                        </span>
+                      ) : lastMsg ? (
+                        <span className="truncate max-w-[140px] block">{lastMsg.text || (lastMsg.image ? '📷 Photo' : 'Message')}</span>
+                      ) : (
+                        <span className="truncate max-w-[140px] block">No messages yet</span>
+                      )}
+                    </span>
+                  </div>
+                  {/* Last message time */}
+                  {lastMsg && lastMsg.createdAt && (
+                    <span className="text-[11px] text-zinc-400 flex-shrink-0 ml-2 whitespace-nowrap">{formatLastMsgTime(lastMsg.createdAt)}</span>
+                  )}
+                </div>
+              </button>
+            );
+          })
         }
 
         {

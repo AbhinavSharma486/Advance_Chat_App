@@ -8,10 +8,10 @@ import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessa
 import { formatMessageTime, REACTION_EMOJIS, groupMessagesByDate, getAvatarUrl } from '../lib/util.js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ArrowLeft } from 'lucide-react';
 
 
-const ChatContainer = () => {
+const ChatContainer = ({ setShowMobileChat }) => {
   const dispatch = useDispatch();
 
   const { messages = [], isMessagesLoading, selectedUser, typingBubble } = useSelector((state) => state.chat);
@@ -117,6 +117,18 @@ const ChatContainer = () => {
   if (isMessagesLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-auto">
+        {/* Mobile back button */}
+        {setShowMobileChat && (
+          <div className="md:hidden flex items-center p-2 border-b border-base-300 bg-base-100">
+            <button
+              onClick={() => setShowMobileChat(false)}
+              className="mr-2 p-2 rounded-full hover:bg-base-200 transition"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <span className="font-semibold">Back</span>
+          </div>
+        )}
         <ChatHeader />
         <MessageSkeleton />
         <MessageInput />
@@ -143,6 +155,18 @@ const ChatContainer = () => {
       )}
       {/* Remove any absolute debug box */}
       <div className='flex-1 flex flex-col'>
+        {/* Mobile back button */}
+        {setShowMobileChat && (
+          <div className="md:hidden flex items-center p-2 border-b border-base-300 bg-base-100">
+            <button
+              onClick={() => setShowMobileChat(false)}
+              className="mr-2 p-2 rounded-full hover:bg-base-200 transition"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <span className="font-semibold">Back</span>
+          </div>
+        )}
         <ChatHeader onOpenDatePicker={handleOpenDatePicker} />
         {/* Scrollable chat area: messages + typing bubble + scroll ref */}
         <div
