@@ -36,7 +36,7 @@ const LoginPage = () => {
     <div className='min-h-screen grid lg:grid-cols-2 gap-0 lg:gap-8 bg-base-100 place-items-center overflow-x-hidden'>
 
       {/* LEFT SIDE */}
-      <div className="flex flex-col justify-center items-center w-full max-w-full px-2 py-6 sm:px-4 md:px-12">
+      <div className="flex flex-col justify-center items-center w-full max-w-full px-2 py-6 sm:px-4 md:px-12 pt-16">
         <div className="w-full max-w-md space-y-4 sm:space-y-6">
 
           {/* LOGO */}
