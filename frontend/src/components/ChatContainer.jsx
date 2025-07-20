@@ -5,7 +5,7 @@ import ChatHeader from './ChatHeader';
 import MessageInput from "./MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
 import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply, markMessagesAsSeen } from '../redux/message/chatSlice';
-import { formatMessageTime, REACTION_EMOJIS, groupMessagesByDate } from '../lib/util.js';
+import { formatMessageTime, REACTION_EMOJIS, groupMessagesByDate, getAvatarUrl } from '../lib/util.js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ChevronDown } from 'lucide-react';
@@ -178,7 +178,7 @@ const ChatContainer = () => {
                     >
                       <div className="chat-image avatar">
                         <div className="size-10 rounded-full border">
-                          <img src={selectedUser?.profilePic || "/avatar.png"} alt="profile pic" />
+                          <img src={getAvatarUrl(selectedUser?.profilePic)} alt="profile pic" onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }} />
                         </div>
                       </div>
                       <div className="chat-bubble flex flex-col relative group">
@@ -216,10 +216,11 @@ const ChatContainer = () => {
                         <img
                           src={
                             isOwn
-                              ? currentUser.profilePic || "/avatar.png"
-                              : selectedUser.profilePic || "/avatar.png"
+                              ? getAvatarUrl(currentUser.profilePic)
+                              : getAvatarUrl(selectedUser.profilePic)
                           }
                           alt="profile pic"
+                          onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }}
                         />
                       </div>
                     </div>

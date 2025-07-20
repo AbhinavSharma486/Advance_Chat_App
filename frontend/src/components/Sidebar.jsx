@@ -4,6 +4,7 @@ import { Users } from 'lucide-react';
 
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { getUsers, setSelectedUser } from '../redux/message/chatSlice';
+import { getAvatarUrl } from '../lib/util';
 
 
 const Sidebar = () => {
@@ -76,9 +77,10 @@ const Sidebar = () => {
             >
               <div className="relative mx-auto lg:mx-0 md:mx-0">
                 <img
-                  src={user.profilePic || "/avatar.png"}
+                  src={getAvatarUrl(user.profilePic)}
                   alt={user.name}
                   className="size-12 object-cover rounded-full"
+                  onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }}
                 />
                 {
                   onlineUserMap[user._id] && (

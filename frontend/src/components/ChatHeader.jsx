@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { X, Calendar } from 'lucide-react';
 
 import { setSelectedUser } from '../redux/message/chatSlice';
+import { getAvatarUrl } from '../lib/util';
 
 
 const ChatHeader = ({ onOpenDatePicker }) => {
@@ -22,8 +23,9 @@ const ChatHeader = ({ onOpenDatePicker }) => {
           <div className="avatar">
             <div className="size-10 rounded-full relative">
               <img
-                src={selectedUser?.profilePic || "/avatar.png"}
+                src={getAvatarUrl(selectedUser?.profilePic)}
                 alt={selectedUser?.fullName}
+                onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }}
               />
             </div>
           </div>

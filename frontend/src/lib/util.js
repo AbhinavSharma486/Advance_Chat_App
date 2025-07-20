@@ -58,3 +58,9 @@ export function formatDateLable(date) {
   });
 
 }
+
+export function getAvatarUrl(profilePic) {
+  if (!profilePic) return "/avatar.png";
+  if (profilePic.startsWith("http")) return profilePic;
+  return `http://localhost:5000/uploads/${profilePic}`;
+}

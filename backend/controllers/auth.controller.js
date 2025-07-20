@@ -1,5 +1,6 @@
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
+import axios from "axios";
 
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
@@ -177,11 +178,21 @@ export const google = async (req, res) => {
 
       const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
 
+      // Use Cloudinary remote fetch for Google avatar
+      let uploadedImageUrl = "";
+      if (googlePhotoUrl) {
+        const uploadResponse = await cloudinary.uploader.upload(googlePhotoUrl, {
+          fetch_format: "auto",
+          folder: "avatars"
+        });
+        uploadedImageUrl = uploadResponse.secure_url;
+      }
+
       user = new User({
         fullName: name,
         email,
         password: hashedPassword,
-        profilePic: googlePhotoUrl,
+        profilePic: uploadedImageUrl, // Use Cloudinary URL
         isVerified: true,
         verificationToken: null,
         verificationTokenExpiresAt: null
