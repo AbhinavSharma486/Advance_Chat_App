@@ -12,7 +12,8 @@ const initialState = {
   isMessagesLoading: false,
   reply: null,
   typingUsers: {}, // { [userId]: true/false }
-  typingBubble: null
+  typingBubble: null,
+  sidebarLastMessages: {}, // { [userId]: lastMessage }
 };
 
 // Reducers 
@@ -111,6 +112,14 @@ const chatSlice = createSlice({
       })
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.messages.push(action.payload);
+      })
+      .addCase(getLastMessagesForSidebar.fulfilled, (state, action) => {
+        // action.payload: [{ userId, lastMessage }]
+        const map = {};
+        for (const item of action.payload) {
+          map[item.userId] = item.lastMessage;
+        }
+        state.sidebarLastMessages = map;
       });
   },
 });
@@ -313,6 +322,18 @@ export const unsubscribeFromMessages = () => (dispatch, getState) => {
   socket.off("stopTyping"); // Ensure stopTyping event is removed
   socket.off("messageSeen");
 };
+
+export const getLastMessagesForSidebar = createAsyncThunk(
+  "chat/getLastMessagesForSidebar",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get("/messages/last-messages");
+      return res.data; // [{ userId, lastMessage: {...} }]
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch last messages");
+    }
+  }
+);
 
 
 export default chatSlice.reducer;
