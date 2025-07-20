@@ -237,3 +237,28 @@ export const markMessagesAsSeen = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Get last message for each user for sidebar preview
+export const getLastMessagesForSidebar = async (req, res) => {
+  try {
+    const myId = req.user.id;
+    // Get all users except self
+    const users = await User.find({ _id: { $ne: myId } }).select('_id');
+    // For each user, get the last message between myId and user._id
+    const results = await Promise.all(users.map(async (user) => {
+      const lastMessage = await Message.findOne({
+        $or: [
+          { senderId: myId, receiverId: user._id },
+          { senderId: user._id, receiverId: myId }
+        ]
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+      return { userId: user._id, lastMessage };
+    }));
+    res.status(200).json(results);
+  } catch (error) {
+    console.log('Error in getLastMessagesForSidebar', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

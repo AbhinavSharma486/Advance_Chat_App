@@ -1,12 +1,14 @@
 import express from "express";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
-import { deleteMessage, editMessage, getMessages, getUsersForSidebar, markMessagesAsSeen, reactToMessage, sendMessage } from "../controllers/message.controller.js";
+import { deleteMessage, editMessage, getMessages, getUsersForSidebar, markMessagesAsSeen, reactToMessage, sendMessage, getLastMessagesForSidebar } from "../controllers/message.controller.js";
 
 
 const router = express.Router();
 
 router.get("/user", protectRoute, getUsersForSidebar);
+
+router.get("/last-messages", protectRoute, getLastMessagesForSidebar);
 
 router.get("/:id", protectRoute, getMessages);
 
