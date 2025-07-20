@@ -233,9 +233,18 @@ export const subscribeToMessages = () => (dispatch, getState) => {
   socket.off("messageSeen");
 
   const messageListener = (newMessage) => {
-    if (selectedUser && newMessage.senderId === selectedUser._id) {
+    const { selectedUser } = getState().chat;
+    const { currentUser } = getState().user;
+    // Show message if it's for the current open chat (either sent or received)
+    if (
+      selectedUser &&
+      (
+        (newMessage.senderId === selectedUser._id && newMessage.receiverId === currentUser._id) ||
+        (newMessage.senderId === currentUser._id && newMessage.receiverId === selectedUser._id)
+      )
+    ) {
       dispatch(addMessage(newMessage));
-      dispatch(removeTypingBubble()); // removing typing bubble on new message
+      dispatch(removeTypingBubble());
     }
   };
 
