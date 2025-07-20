@@ -16,13 +16,13 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import ProfilePage from './pages/ProfilePage';
 import { subscribeToMessages, unsubscribeFromMessages } from "./redux/message/chatSlice";
+import { connectSocketThunk } from "./redux/user/userSlice";
 
 const App = () => {
-  const socket = useSelector((state) => state.user.socket);
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const { currentUser, isCheckingAuth, onlineUsers } = useSelector((state) => state.user);
+  const { currentUser, isCheckingAuth, onlineUsers, socket } = useSelector((state) => state.user);
 
   const theme = useSelector((state) => state.theme.theme);
 
@@ -42,6 +42,12 @@ const App = () => {
       };
     }
   }, [socket, dispatch]);
+
+  useEffect(() => {
+    if (currentUser && !socket) {
+      dispatch(connectSocketThunk());
+    }
+  }, [currentUser, socket, dispatch]);
 
   if (isCheckingAuth && !currentUser) {
     return (

@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import toast from "react-hot-toast";
 
-import { logInSuccess, logInFailure } from "../redux/user/userSlice";
+import { logInSuccess, logInFailure, connectSocketThunk } from "../redux/user/userSlice";
 import { app } from "../../firebase";
 
 
@@ -35,6 +35,7 @@ export default function OAuth() {
 
       if (res.ok) {
         dispatch(logInSuccess(data));
+        dispatch(connectSocketThunk());
         navigate("/");
       }
 

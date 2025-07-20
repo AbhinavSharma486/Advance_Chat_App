@@ -184,6 +184,7 @@ export const signup = (data, navigate) => async (dispatch) => {
     const res = await axiosInstance.post("/auth/signup", data);
 
     dispatch(signUpSuccess(res.data));
+    dispatch(connectSocketThunk());
     navigate("/verify-email");
     toast.success("OTP has been sent to your email");
   } catch (error) {
@@ -215,9 +216,8 @@ export const login = (data, navigate) => async (dispatch) => {
   try {
     const res = await axiosInstance.post("/auth/login", data);
     dispatch(logInSuccess(res.data));
-
-    toast.success("Logged In successfully");
     dispatch(connectSocketThunk());
+    toast.success("Logged In successfully");
     navigate("/");
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Login Failed";
@@ -342,7 +342,14 @@ export const deleteProfile = (userId, navigate) => async (dispatch) => {
 export const connectSocketThunk = () => async (dispatch, getState) => {
   const { currentUser, socket } = getState().user;
 
-  if (!currentUser || socket) return; // Prevent multiple connections
+  // Always clean up previous socket if exists
+  if (socket) {
+    socket.off("getOnlineUsers");
+    socket.disconnect();
+    dispatch(disconnectSocket());
+  }
+
+  if (!currentUser) return;
 
   const newSocket = io(API_URL, {
     query: { userId: currentUser._id },
@@ -358,6 +365,7 @@ export const connectSocketThunk = () => async (dispatch, getState) => {
   });
 
   newSocket.on("getOnlineUsers", (onlineUsers) => {
+    console.log("getOnlineUsers event:", onlineUsers);
     dispatch(setOnlineUsers(onlineUsers));
   });
 
