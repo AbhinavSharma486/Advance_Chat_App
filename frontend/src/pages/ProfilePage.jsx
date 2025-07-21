@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Cropper from 'react-easy-crop';
 
 import { deleteProfile, updateProfile } from "../redux/user/userSlice";
-import getCroppedImg from '../lib/util';
+import getCroppedImg, { getAvatarUrl } from '../lib/util';
 
 const ProfilePage = () => {
   const [selectedImg, setSelectedImg] = useState(null);
@@ -131,37 +131,58 @@ const ProfilePage = () => {
             <p className="mt-2 text-base-content/70 text-sm sm:text-base">Your profile information</p>
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <img
-                src={croppedImg || selectedImg || currentUser?.profilePic || "/avatar.png"}
-                alt="Profile"
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-base-200"
-                style={{ opacity: avatarLoading ? 0.5 : 1 }}
-              />
-              {avatarLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-full">
-                  <Loader2 className="w-10 h-10 text-white animate-spin" />
+          <div className="relative flex flex-col items-center">
+            <img
+              src={croppedImg || selectedImg || getAvatarUrl(currentUser?.profilePic)}
+              alt="Profile"
+              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-base-200"
+              style={{ opacity: avatarLoading ? 0.5 : 1 }}
+            />
+            {avatarLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-full">
+                <Loader2 className="w-10 h-10 text-white animate-spin" />
+              </div>
+            )}
+            {/* Icons row below avatar */}
+            <div className="flex flex-row items-center gap-4 mt-3">
+              <div className="relative group">
+                <label
+                  htmlFor="avatar-upload"
+                  className="bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 mb-0 flex items-center"
+                >
+                  <Camera className="w-5 h-5 text-base-200" />
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={avatarLoading}
+                  />
+                </label>
+                <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-20">Upload</span>
+              </div>
+              {(selectedImg || croppedImg || currentUser?.profilePic) && (
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className="bg-base-content hover:bg-red-500 p-2 rounded-full cursor-pointer transition-all duration-200 flex items-center"
+                    onClick={async () => {
+                      setSelectedImg(null);
+                      setCroppedImg(null);
+                      // Always send at least one non-empty field (fullName fallback)
+                      await dispatch(updateProfile({ profilePic: null, fullName: currentUser?.fullName }));
+                      toast.success("Avatar removed. Default avatar set.");
+                    }}
+                    disabled={avatarLoading}
+                    aria-label="Remove Avatar"
+                  >
+                    <Trash2 className="w-5 h-5 text-base-200" />
+                  </button>
+                  <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-20">Remove</span>
                 </div>
               )}
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200"
-              >
-                <Camera className="w-5 h-5 text-base-200" />
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={avatarLoading}
-                />
-              </label>
             </div>
-            <p className="text-xs sm:text-sm text-base-content/60">
-              Click the camera icon to update your image
-            </p>
           </div>
 
           <div className="space-y-6">

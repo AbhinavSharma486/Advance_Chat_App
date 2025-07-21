@@ -317,7 +317,10 @@ export const updateProfile = (userData) => async (dispatch) => {
     });
 
     dispatch(updateProfileSuccess(res.data));
-    toast.success("Profile updated successfully");
+    // Only show toast if not just avatar removal
+    if (!(Object.keys(userData).length === 2 && userData.profilePic !== undefined && (userData.profilePic === null || userData.profilePic === "") && userData.fullName)) {
+      toast.success("Profile updated successfully");
+    }
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Profile update failed";
     dispatch(updateProfileFailure(errorMessage));
