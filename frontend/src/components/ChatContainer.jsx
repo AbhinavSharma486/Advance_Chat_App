@@ -250,8 +250,14 @@ const ChatContainer = ({ setShowMobileChat }) => {
                     </div>
 
                     <div className="chat-header mb-1 flex items-center gap-2">
-                      {message.edited && !isDeleted && (
-                        <span className="text-xs text-yellow-400 ml-1">(edited)</span>
+                      {/* Replied message snippet at the top of the bubble (improved styling) */}
+                      {message.replyTo && (
+                        <div className="mb-2 p-2 rounded-t bg-base-100 border-l-4 border-primary/80" style={{ marginLeft: '-0.5rem', marginRight: '-0.5rem' }}>
+                          <div className="font-semibold text-primary text-xs mb-0.5">{message.replyTo.senderId?.fullName || 'User'}</div>
+                          <div className="text-xs text-zinc-500 italic truncate max-w-xs">
+                            {message.replyTo.text || (message.replyTo.image ? '[Image]' : '')}
+                          </div>
+                        </div>
                       )}
                     </div>
 
@@ -273,7 +279,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
                           className="flex gap-2 items-center"
                         >
                           <input
-                            className="input input-sm"
+                            className="input input-sm w-full text-base-content"
                             value={editText}
                             onChange={e => setEditText(e.target.value)}
                             autoFocus
@@ -283,22 +289,18 @@ const ChatContainer = ({ setShowMobileChat }) => {
                         </form>
                       ) : (
                         <>
-                          {/* Replied message snippet at the top of the bubble (improved styling) */}
-                          {message.replyTo && (
-                            <div className="mb-2 p-2 rounded-t bg-base-100 border-l-4 border-primary/80" style={{ marginLeft: '-0.5rem', marginRight: '-0.5rem' }}>
-                              <div className="font-semibold text-primary text-xs mb-0.5">{message.replyTo.senderId?.fullName || 'User'}</div>
-                              <div className="text-xs text-zinc-500 italic truncate max-w-xs">
-                                {message.replyTo.text || (message.replyTo.image ? '[Image]' : '')}
-                              </div>
-                            </div>
-                          )}
                           {/* Message text and time/tick row at bottom right */}
                           <div className="flex flex-col w-full relative">
                             <span className={isDeleted ? "italic text-zinc-400" : ""} style={{ flex: '1 1 auto' }}>{message.text}</span>
                             {/* Time and ticks row, right-aligned at bottom */}
-                            {isOwn && !isDeleted && (
+                            {(isOwn && !isDeleted) ? (
                               <span className="flex items-center justify-end gap-1 text-xs opacity-50 mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
-                                <span className="whitespace-nowrap">{formatMessageTime(message.createdAt)}</span>
+                                {/* (edited) label before time if edited */}
+                                {message.edited ? (
+                                  <span className="whitespace-nowrap">edited&nbsp;{formatMessageTime(message.createdAt)}</span>
+                                ) : (
+                                  <span className="whitespace-nowrap">{formatMessageTime(message.createdAt)}</span>
+                                )}
                                 {message.seen && message.seen.includes(selectedUser._id) ? (
                                   <>
                                     <span title="Seen" className="text-blue-500 dark:text-blue-400" style={{ marginRight: -2 }}>✔</span>
@@ -315,12 +317,17 @@ const ChatContainer = ({ setShowMobileChat }) => {
                                   )
                                 )}
                               </span>
-                            )}
-                            {/* For received messages, just show time bottom right */}
-                            {!isOwn && (
-                              <span className="flex items-center justify-end text-xs opacity-50 mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
-                                <span className="whitespace-nowrap">{formatMessageTime(message.createdAt)}</span>
-                              </span>
+                            ) : (
+                              !isOwn && (
+                                <span className="flex items-center justify-end text-xs opacity-50 mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
+                                  {/* (edited) label before time if edited */}
+                                  {message.edited ? (
+                                    <span className="whitespace-nowrap">edited&nbsp;{formatMessageTime(message.createdAt)}</span>
+                                  ) : (
+                                    <span className="whitespace-nowrap">{formatMessageTime(message.createdAt)}</span>
+                                  )}
+                                </span>
+                              )
                             )}
                           </div>
                         </>
@@ -345,12 +352,22 @@ const ChatContainer = ({ setShowMobileChat }) => {
                             ))}
                           </div>
                           <button
-                            className="w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1"
+                            className="w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1 text-base-content"
                             onClick={() => {
                               dispatch(setReply(message));
                               setPickerFor(null);
                             }}
                           >Reply</button>
+                          {isOwn && !isDeleted && (
+                            <button
+                              className="w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1 text-base-content"
+                              onClick={() => {
+                                setEditingId(message._id);
+                                setEditText(message.text);
+                                setPickerFor(null);
+                              }}
+                            >Edit</button>
+                          )}
                           {isOwn && !isDeleted && (
                             <button
                               className="w-full text-left text-red-500 px-2 py-1 hover:bg-red-100 rounded mt-1"

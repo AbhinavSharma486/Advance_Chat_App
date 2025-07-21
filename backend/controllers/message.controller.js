@@ -166,7 +166,7 @@ export const editMessage = async (req, res) => {
       const socketIdsArray = Array.isArray(receiverSocketIds) ? receiverSocketIds : [receiverSocketIds];
 
       socketIdsArray.forEach(socketId => {
-        io.to(socketId).emit("messageEdited", { messageId, test, edited: true, editedAt: message.editedAt });
+        io.to(socketId).emit("messageEdited", { messageId, text, edited: true, editedAt: message.editedAt });
       });
     }
 
