@@ -31,9 +31,16 @@ const ThemeModal = ({ open, onClose }) => {
             <button
               key={t}
               className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors w-full
-                ${theme === t ? "bg-base-200" : "hover:bg-base-200/50"}
+                ${theme === t ? "bg-base-200 ring-2 ring-primary" : "hover:bg-base-200/50"}
               `}
-              onClick={() => dispatch(setTheme(t))}
+              onClick={() => {
+                if (theme !== t) {
+                  dispatch(setTheme(t));
+                  onClose();
+                }
+              }}
+              disabled={theme === t}
+              style={{ position: 'relative' }}
             >
               <div className="relative h-8 w-full rounded-md overflow-hidden" data-theme={t}>
                 <div className="absolute inset-0 grid grid-cols-4 gap-px p-1">
@@ -42,6 +49,9 @@ const ThemeModal = ({ open, onClose }) => {
                   <div className="rounded bg-accent"></div>
                   <div className="rounded bg-neutral"></div>
                 </div>
+                {theme === t && (
+                  <span className="absolute top-1 right-1 bg-primary text-white rounded-full px-1 text-xs">✔</span>
+                )}
               </div>
               <span className="text-[11px] font-medium truncate w-full text-center">
                 {t.charAt(0).toUpperCase() + t.slice(1)}
