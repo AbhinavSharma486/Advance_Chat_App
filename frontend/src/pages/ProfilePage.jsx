@@ -31,6 +31,7 @@ const ProfilePage = () => {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [imgStart, setImgStart] = useState({ x: 0, y: 0 });
+  const theme = useSelector((state) => state.theme.theme);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -202,7 +203,7 @@ const ProfilePage = () => {
             <img
               src={croppedImg || selectedImg || getAvatarUrl(currentUser?.profilePic)}
               alt="Profile"
-              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-base-200"
+              className={`w-40 h-40 sm:w-56 sm:h-56 rounded-full object-cover border-4 ${theme === 'dark' ? 'border-primary' : 'border-accent'}`}
               style={{ opacity: avatarLoading ? 0.5 : 1 }}
             />
             {avatarLoading && (
@@ -411,7 +412,7 @@ const ProfilePage = () => {
               />
             </div>
             <div className="flex gap-4 mt-4">
-              <button onClick={() => setShowCropModal(false)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={() => { setShowCropModal(false); setSelectedImg(null); setCroppedImg(null); }} className={`bg-gray-300 ${theme === 'dark' ? 'text-white' : 'text-black'} px-4 py-2 rounded`}>Cancel</button>
               <button onClick={handleCropSave} className="bg-blue-500 text-white px-4 py-2 rounded">Crop & Save</button>
             </div>
           </div>
