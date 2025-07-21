@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { Users } from 'lucide-react';
 
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
@@ -10,14 +10,17 @@ import { getAvatarUrl } from '../lib/util';
 const Sidebar = ({ setShowMobileChat }) => {
   const dispatch = useDispatch();
 
-  const { users, selectedUser, isUsersLoading, typingUsers = {}, sidebarLastMessages } = useSelector((state) => state.chat);
+  const { users, selectedUser, isUsersLoading, typingUsers = {}, sidebarLastMessages } = useSelector(
+    (state) => state.chat,
+    shallowEqual
+  );
   const { onlineUsers = [] } = useSelector((state) => state.user || {});
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   useEffect(() => {
     dispatch(getUsers());
-    dispatch(getLastMessagesForSidebar());
+    // Remove getLastMessagesForSidebar from here, rely on real-time updates
   }, [dispatch]);
 
   // Map for quick lookup

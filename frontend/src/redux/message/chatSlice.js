@@ -29,6 +29,14 @@ const chatSlice = createSlice({
     addMessage: (state, action) => {
       state.messages.push(action.payload);
     },
+    updateSidebarLastMessage: (state, action) => {
+      const msg = action.payload;
+      // Always update for both sender and receiver
+      if (msg.senderId && msg.receiverId) {
+        state.sidebarLastMessages[msg.senderId] = msg;
+        state.sidebarLastMessages[msg.receiverId] = msg;
+      }
+    },
     updateMessageReactions: (state, action) => {
       const { messageId, reactions } = action.payload;
       const msg = state.messages.find(m => m._id === messageId);
@@ -112,6 +120,12 @@ const chatSlice = createSlice({
       })
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.messages.push(action.payload);
+        // Force update sidebar last message for both sender and receiver
+        const msg = action.payload;
+        if (msg.senderId && msg.receiverId) {
+          state.sidebarLastMessages[msg.senderId] = msg;
+          state.sidebarLastMessages[msg.receiverId] = msg;
+        }
       })
       .addCase(getLastMessagesForSidebar.fulfilled, (state, action) => {
         // action.payload: [{ userId, lastMessage }]
@@ -127,6 +141,7 @@ const chatSlice = createSlice({
 export const {
   setSelectedUser,
   addMessage,
+  updateSidebarLastMessage,
   updateMessageReactions,
   updateMessageEdit,
   updateMessageDelete,
@@ -255,6 +270,8 @@ export const subscribeToMessages = () => (dispatch, getState) => {
       dispatch(addMessage(newMessage));
       dispatch(removeTypingBubble());
     }
+    // Always update sidebar last message for both users
+    dispatch(updateSidebarLastMessage(newMessage));
   };
 
   const reactionListner = (data) => {
