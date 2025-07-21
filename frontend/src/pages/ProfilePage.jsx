@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Camera, Mail, User, Trash2, Lock, EyeOff, Eye, X, Loader2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Cropper from 'react-easy-crop';
 
 import { deleteProfile, updateProfile } from "../redux/user/userSlice";
-
-import { useRef } from "react";
+import getCroppedImg from '../lib/util';
 
 const ProfilePage = () => {
   const [selectedImg, setSelectedImg] = useState(null);
@@ -20,6 +20,11 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [isDeletingProfile, setIsDeletingProfile] = useState(false);
   const deleteProfileRef = useRef();
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [croppedImg, setCroppedImg] = useState(null);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -28,20 +33,53 @@ const ProfilePage = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImg(reader.result);
-        setTimeout(() => setAvatarLoading(false), 800); // Simulate loading for better UX
+        setShowCropModal(true);
+        setTimeout(() => setAvatarLoading(false), 800);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleUpdateProfile = () => {
+  const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleCropSave = async () => {
+    try {
+      setAvatarLoading(true);
+      // getCroppedImg now returns a blob URL or data URL
+      const croppedImageUrl = await getCroppedImg(selectedImg, croppedAreaPixels);
+      setCroppedImg(croppedImageUrl);
+      setSelectedImg(croppedImageUrl);
+      setShowCropModal(false);
+    } catch (e) {
+      toast.error('Failed to crop image');
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
     if (newPassword && newPassword.length < 6) {
       return toast.error("Password must be at least 6 characters long.");
     }
 
+    let profilePicToSend = selectedImg || currentUser?.profilePic;
+    // If it's a blob URL, convert to base64
+    if (profilePicToSend && profilePicToSend.startsWith('blob:')) {
+      profilePicToSend = await fetch(profilePicToSend)
+        .then(res => res.blob())
+        .then(blob => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        }));
+    }
+
     const updatedData = {
       fullName: fullName || currentUser?.fullName,
-      profilePic: selectedImg || currentUser?.profilePic,
+      profilePic: profilePicToSend,
       newPassword: newPassword || undefined,
     };
     dispatch(updateProfile(updatedData));
@@ -96,7 +134,7 @@ const ProfilePage = () => {
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <img
-                src={selectedImg || currentUser?.profilePic || "/avatar.png"}
+                src={croppedImg || selectedImg || currentUser?.profilePic || "/avatar.png"}
                 alt="Profile"
                 className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-base-200"
                 style={{ opacity: avatarLoading ? 0.5 : 1 }}
@@ -256,6 +294,27 @@ const ProfilePage = () => {
           </div>
         )
       }
+      {showCropModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-base-100 p-4 rounded-lg shadow-lg flex flex-col items-center">
+            <div className="relative w-72 h-72 bg-black">
+              <Cropper
+                image={selectedImg}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+            <div className="flex gap-4 mt-4">
+              <button onClick={() => setShowCropModal(false)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={handleCropSave} className="bg-blue-500 text-white px-4 py-2 rounded">Crop & Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
