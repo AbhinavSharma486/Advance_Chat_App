@@ -42,8 +42,8 @@ const Sidebar = ({ setShowMobileChat }) => {
   let filteredUsers = showOnlineOnly ? sortedUsers.filter(user => onlineUserMap[user._id]) : sortedUsers;
   // Sort by last message time (desc), users with no message at bottom
   filteredUsers = [...filteredUsers].sort((a, b) => {
-    const aMsg = sidebarLastMessages?.[a._id];
-    const bMsg = sidebarLastMessages?.[b._id];
+    const aMsg = sidebarLastMessages?.[String(a._id)];
+    const bMsg = sidebarLastMessages?.[String(b._id)];
     if (!aMsg && !bMsg) return 0;
     if (!aMsg) return 1;
     if (!bMsg) return -1;
@@ -99,7 +99,7 @@ const Sidebar = ({ setShowMobileChat }) => {
         {
           filteredUsers.map((user) => {
             // Use sidebarLastMessages for preview
-            const lastMsg = sidebarLastMessages?.[user._id] || null;
+            const lastMsg = sidebarLastMessages?.[String(user._id)] || null;
             return (
               <button
                 key={user._id}

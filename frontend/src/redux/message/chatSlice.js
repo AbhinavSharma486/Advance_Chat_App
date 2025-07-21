@@ -31,10 +31,11 @@ const chatSlice = createSlice({
     },
     updateSidebarLastMessage: (state, action) => {
       const msg = action.payload;
-      // Always update for both sender and receiver
-      if (msg.senderId && msg.receiverId) {
-        state.sidebarLastMessages[msg.senderId] = msg;
-        state.sidebarLastMessages[msg.receiverId] = msg;
+      if (msg.senderId) {
+        state.sidebarLastMessages[String(msg.senderId)] = { ...(state.sidebarLastMessages[String(msg.senderId)] || {}), ...msg, _id: String(msg._id) };
+      }
+      if (msg.receiverId) {
+        state.sidebarLastMessages[String(msg.receiverId)] = { ...(state.sidebarLastMessages[String(msg.receiverId)] || {}), ...msg, _id: String(msg._id) };
       }
     },
     updateMessageReactions: (state, action) => {
@@ -280,6 +281,12 @@ export const subscribeToMessages = () => (dispatch, getState) => {
 
   const editListner = (data) => {
     dispatch(updateMessageEdit(data));
+    if (data.senderId) {
+      dispatch(updateSidebarLastMessage({ ...data, _id: String(data.messageId), senderId: String(data.senderId), receiverId: String(data.receiverId) }));
+    }
+    if (data.receiverId) {
+      dispatch(updateSidebarLastMessage({ ...data, _id: String(data.messageId), senderId: String(data.senderId), receiverId: String(data.receiverId) }));
+    }
   };
 
   const deleteListner = (data) => {

@@ -166,11 +166,25 @@ export const editMessage = async (req, res) => {
       const socketIdsArray = Array.isArray(receiverSocketIds) ? receiverSocketIds : [receiverSocketIds];
 
       socketIdsArray.forEach(socketId => {
-        io.to(socketId).emit("messageEdited", { messageId, text, edited: true, editedAt: message.editedAt });
+        io.to(socketId).emit("messageEdited", {
+          messageId,
+          text,
+          edited: true,
+          editedAt: message.editedAt,
+          senderId: message.senderId,
+          receiverId: message.receiverId
+        });
       });
     }
 
-    io.to(req.user.id).emit("messageEdited", { messageId, text, edited: true, editedAt: message.editedAt });
+    io.to(req.user.id).emit("messageEdited", {
+      messageId,
+      text,
+      edited: true,
+      editedAt: message.editedAt,
+      senderId: message.senderId,
+      receiverId: message.receiverId
+    });
 
     res.status(200).json({ messageId, text, edited: true, editedAt: message.editedAt });
   } catch (error) {
