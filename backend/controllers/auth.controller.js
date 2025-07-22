@@ -298,7 +298,14 @@ export const updateProfile = async (req, res) => {
     let updateData = {};
 
     if (profilePic) {
-      const uploadResponse = await cloudinary.uploader.upload(profilePic);
+      const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+        folder: "avatars",
+        width: 400,
+        height: 400,
+        crop: "fill",
+        quality: "auto:good",
+        format: "jpg"
+      });
       updateData.profilePic = uploadResponse.secure_url;
     } else if (profilePic === null || profilePic === "") {
       // Set to default avatar URL

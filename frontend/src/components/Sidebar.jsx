@@ -118,10 +118,15 @@ const Sidebar = ({ setShowMobileChat }) => {
                 {/* Avatar */}
                 <div className="relative mx-auto lg:mx-0 md:mx-0 flex-shrink-0" onClick={e => {
                   e.stopPropagation();
-                  dispatch(setSelectedUserForPreview(user));
+                  // Pass both small and original avatar URLs for preview
+                  dispatch(setSelectedUserForPreview({
+                    ...user,
+                    smallAvatar: user.profilePic ? user.profilePic.replace('/upload/', '/upload/w_96,h_96,c_fill/') : user.profilePic,
+                    highResAvatar: user.profilePic // original 400x400
+                  }));
                 }} style={{ cursor: 'pointer' }}>
                   <img
-                    src={getAvatarUrl(user.profilePic)}
+                    src={user.profilePic ? user.profilePic.replace('/upload/', '/upload/w_96,h_96,c_fill/') : user.profilePic}
                     alt={user.name}
                     className="size-12 object-cover rounded-full"
                     onError={(e) => { e.target.onerror = null; e.target.src = "/avatar.png"; }}

@@ -69,7 +69,7 @@ const UserProfilePreview = () => {
         <div className="mb-4 select-none">
           <img
             ref={imgRef}
-            src={getAvatarUrl(user.profilePic)}
+            src={user.highResAvatar || user.profilePic}
             alt={user.fullName}
             className="w-24 h-24 rounded-full object-cover border-4 border-primary shadow"
             onError={e => { e.target.onerror = null; e.target.src = '/avatar.png'; }}
