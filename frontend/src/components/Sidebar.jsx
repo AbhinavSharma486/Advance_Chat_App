@@ -5,6 +5,7 @@ import { Users } from 'lucide-react';
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { getUsers, setSelectedUser, getLastMessagesForSidebar } from '../redux/message/chatSlice';
 import { getAvatarUrl } from '../lib/util';
+import { setSelectedUserForPreview } from '../redux/user/userSlice';
 
 
 const Sidebar = ({ setShowMobileChat }) => {
@@ -115,7 +116,10 @@ const Sidebar = ({ setShowMobileChat }) => {
                 `}
               >
                 {/* Avatar */}
-                <div className="relative mx-auto lg:mx-0 md:mx-0 flex-shrink-0">
+                <div className="relative mx-auto lg:mx-0 md:mx-0 flex-shrink-0" onClick={e => {
+                  e.stopPropagation();
+                  dispatch(setSelectedUserForPreview(user));
+                }} style={{ cursor: 'pointer' }}>
                   <img
                     src={getAvatarUrl(user.profilePic)}
                     alt={user.name}

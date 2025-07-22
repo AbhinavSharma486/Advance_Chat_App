@@ -17,6 +17,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import ProfilePage from './pages/ProfilePage';
 import { subscribeToMessages, unsubscribeFromMessages } from "./redux/message/chatSlice";
 import { connectSocketThunk } from "./redux/user/userSlice";
+import UserProfilePreview from './components/UserProfilePreview';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -70,7 +71,7 @@ const App = () => {
         <Route path='/verify-email' element={<EmailVerificationPage />} />
         <Route path='/profile' element={currentUser ? <ProfilePage /> : <Navigate to="/" />} />
       </Routes>
-
+      <UserProfilePreview />
       <Toaster />
     </div>
   );

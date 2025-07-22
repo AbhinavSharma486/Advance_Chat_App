@@ -16,7 +16,8 @@ const initialState = {
   isUpdatingProfile: false,
   isCheckingAuth: true,
   onlineUsers: [], // [{ userId, onlineAt }]
-  socket: null
+  socket: null,
+  selectedUserForPreview: null, // <-- add this line
 };
 
 const userSlice = createSlice({
@@ -145,7 +146,10 @@ const userSlice = createSlice({
     },
     disconnectSocket: (state) => {
       state.socket = null;
-    }
+    },
+    setSelectedUserForPreview: (state, action) => {
+      state.selectedUserForPreview = action.payload;
+    },
   }
 });
 
@@ -177,7 +181,8 @@ export const {
   deleteProfileFailure,
   setOnlineUsers,
   connectSocket,
-  disconnectSocket
+  disconnectSocket,
+  setSelectedUserForPreview
 } = userSlice.actions;
 
 export const signup = (data, navigate) => async (dispatch) => {
@@ -295,7 +300,7 @@ export const resetPassword = (token, password, navigate) => async (dispatch) => 
   dispatch(resetPasswordStart());
 
   try {
-    const cleanToken = token.replace(/}$/, ''); // Remove any `{` or `}`
+    const cleanToken = token.replace(/}$/, ''); // Remove any `{` if present
     await axiosInstance.post(`/auth/reset-password/${cleanToken}`, { password });
     dispatch(resetPasswordSuccess());
     toast.success("Password has been successfully reset");
@@ -304,43 +309,6 @@ export const resetPassword = (token, password, navigate) => async (dispatch) => 
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Password reset failed";
     dispatch(resetPasswordFailure(errorMessage));
-    toast.error(errorMessage);
-  }
-};
-
-export const updateProfile = (userData) => async (dispatch) => {
-  dispatch(updateProfileStart());
-
-  try {
-    const res = await axiosInstance.put("/auth/update-profile", userData, {
-      withCredentials: true,
-    });
-
-    dispatch(updateProfileSuccess(res.data));
-    // Only show toast if not just avatar removal
-    if (!(Object.keys(userData).length === 2 && userData.profilePic !== undefined && (userData.profilePic === null || userData.profilePic === "") && userData.fullName)) {
-      toast.success("Profile updated successfully");
-    }
-  } catch (error) {
-    const errorMessage = error.response?.data?.message || "Profile update failed";
-    dispatch(updateProfileFailure(errorMessage));
-    toast.error(errorMessage);
-  }
-};
-
-export const deleteProfile = (userId, navigate) => async (dispatch) => {
-  dispatch(deleteProfileStart());
-
-  try {
-    await axiosInstance.delete(`/auth/delete/${userId}`, {
-      withCredentials: true,
-    });
-    dispatch(deleteProfileSuccess());
-    toast.success("Profile deleted successfully");
-    navigate("/signup");
-  } catch (error) {
-    const errorMessage = error.response?.data?.message || "Profile deletion failed";
-    dispatch(deleteProfileFailure(errorMessage));
     toast.error(errorMessage);
   }
 };
@@ -385,6 +353,43 @@ export const disconnectSocketThunk = () => async (dispatch, getState) => {
     socket.off("getOnlineUsers");
     socket.disconnect();
     dispatch(disconnectSocket());
+  }
+};
+
+export const updateProfile = (userData) => async (dispatch) => {
+  dispatch(updateProfileStart());
+
+  try {
+    const res = await axiosInstance.put("/auth/update-profile", userData, {
+      withCredentials: true,
+    });
+
+    dispatch(updateProfileSuccess(res.data));
+    // Only show toast if not just avatar removal
+    if (!(Object.keys(userData).length === 2 && userData.profilePic !== undefined && (userData.profilePic === null || userData.profilePic === "") && userData.fullName)) {
+      toast.success("Profile updated successfully");
+    }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Profile update failed";
+    dispatch(updateProfileFailure(errorMessage));
+    toast.error(errorMessage);
+  }
+};
+
+export const deleteProfile = (userId, navigate) => async (dispatch) => {
+  dispatch(deleteProfileStart());
+
+  try {
+    await axiosInstance.delete(`/auth/delete/${userId}`, {
+      withCredentials: true,
+    });
+    dispatch(deleteProfileSuccess());
+    toast.success("Profile deleted successfully");
+    navigate("/signup");
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Profile deletion failed";
+    dispatch(deleteProfileFailure(errorMessage));
+    toast.error(errorMessage);
   }
 };
 
