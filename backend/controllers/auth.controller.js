@@ -181,9 +181,16 @@ export const google = async (req, res) => {
       // Use Cloudinary remote fetch for Google avatar
       let uploadedImageUrl = "";
       if (googlePhotoUrl) {
-        const uploadResponse = await cloudinary.uploader.upload(googlePhotoUrl, {
+        // Replace sXX-c with s400-c for high-res
+        const highResUrl = googlePhotoUrl.replace(/s\d+-c/, 's400-c');
+        const uploadResponse = await cloudinary.uploader.upload(highResUrl, {
           fetch_format: "auto",
-          folder: "avatars"
+          folder: "avatars",
+          width: 400,
+          height: 400,
+          crop: "fill",
+          quality: "auto:good",
+          format: "jpg"
         });
         uploadedImageUrl = uploadResponse.secure_url;
       }
