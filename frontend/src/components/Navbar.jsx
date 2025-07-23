@@ -143,6 +143,20 @@ const Navbar = () => {
   const [fontModalOpen, setFontModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handler = (e) => {
+      // If click is outside the dropdown, close it
+      const dropdown = document.getElementById('mobile-navbar-dropdown');
+      if (dropdown && !dropdown.contains(e.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [mobileMenuOpen]);
+
   const handleLogout = () => {
     dispatch(logout(navigate));
   };
@@ -207,38 +221,45 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Dropdown Menu (centered, top, modal style) */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex flex-col md:hidden" onClick={() => setMobileMenuOpen(false)}>
-          <div className="bg-base-100 shadow-lg p-4 flex flex-col gap-3 w-11/12 max-w-xs h-full" onClick={e => e.stopPropagation()}>
-            <button className="self-end mb-2 btn btn-ghost btn-circle" onClick={() => setMobileMenuOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center md:hidden">
+          {/* Blurred overlay */}
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          {/* Dropdown */}
+          <div
+            id="mobile-navbar-dropdown"
+            className="relative mt-4 w-64 bg-base-100 rounded-2xl shadow-2xl p-3 flex flex-col gap-3 border border-base-300 animate-fadeIn"
+            style={{ zIndex: 60 }}
+          >
+            <button className="absolute top-2 right-2 btn btn-ghost btn-circle" onClick={() => setMobileMenuOpen(false)}>
               <X className="w-6 h-6" />
             </button>
             <button
               type="button"
-              className={`btn btn-sm gap-2 transition-colors`}
+              className="btn btn-ghost flex flex-row items-center justify-center gap-2 py-2 text-base text-center"
               onClick={() => { setThemeModalOpen(true); setMobileMenuOpen(false); }}
             >
-              <Settings className="w-4 h-4" />
-              Themes
+              <Settings className="w-5 h-5" />
+              <span className="text-sm">Themes</span>
             </button>
             <button
               type="button"
-              className={`btn btn-sm gap-2 transition-colors`}
+              className="btn btn-ghost flex flex-row items-center justify-center gap-2 py-2 text-base text-center"
               onClick={() => { setFontModalOpen(true); setMobileMenuOpen(false); }}
             >
-              <Type className="w-4 h-4" />
-              Fonts
+              <Type className="w-5 h-5" />
+              <span className="text-sm">Fonts</span>
             </button>
             {currentUser && (
               <>
-                <Link to={"/profile"} className={`btn btn-sm gap-2`} onClick={() => setMobileMenuOpen(false)}>
-                  <User className="size-5" />
-                  Profile
+                <Link to={"/profile"} className="btn btn-ghost flex flex-row items-center justify-center gap-2 py-2 text-base text-center" onClick={() => setMobileMenuOpen(false)}>
+                  <User className="w-5 h-5" />
+                  <span className="text-sm">Profile</span>
                 </Link>
-                <button className="flex gap-2 items-center btn btn-sm" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
-                  <LogOut className="size-5" />
-                  Logout
+                <button className="btn btn-ghost flex flex-row items-center justify-center gap-2 py-2 text-base text-center" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-sm">Logout</span>
                 </button>
               </>
             )}
