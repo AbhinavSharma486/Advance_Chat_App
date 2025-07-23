@@ -259,11 +259,6 @@ const ChatContainer = ({ setShowMobileChat }) => {
                   <div
                     key={message._id}
                     className={`chat ${isOwn ? "chat-end" : "chat-start"}`}
-                    onContextMenu={e => {
-                      e.preventDefault();
-                      setPickerFor(message._id);
-                      setPickerPos({ x: e.clientX, y: e.clientY });
-                    }}
                     onMouseLeave={() => setShowReactions(r => ({ ...r, [message._id]: false }))}
                     onTouchStart={e => handleTouchStart(message._id, e)}
                     onTouchMove={e => handleTouchMove(message._id, e)}
@@ -301,7 +296,14 @@ const ChatContainer = ({ setShowMobileChat }) => {
                       )}
                     </div>
 
-                    <div className={`chat-bubble flex flex-col relative group transition-colors duration-300 ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content'}`}>
+                    <div
+                      className={`chat-bubble flex flex-col relative group transition-colors duration-300 ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content'}`}
+                      onContextMenu={e => {
+                        e.preventDefault();
+                        setPickerFor(message._id);
+                        setPickerPos({ x: e.clientX, y: e.clientY });
+                      }}
+                    >
                       {/* Swipe-to-reply icon feedback */}
                       {window.innerWidth >= 320 && window.innerWidth <= 767 && swipeStates[message._id]?.x > 20 && !isOwn && (
                         <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-primary text-2xl transition-opacity duration-200 opacity-80">
