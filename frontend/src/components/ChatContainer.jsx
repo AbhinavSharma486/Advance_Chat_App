@@ -29,6 +29,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
   const chatAreaRef = useRef(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [swipeStates, setSwipeStates] = useState({}); // { [msgId]: { x, active } }
+  const [mediaPreview, setMediaPreview] = useState(null); // { type, url }
 
   // Touch event handlers for swipe-to-reply
   const touchData = useRef({}); // { [msgId]: { startX, lastX, swiping } }
@@ -145,6 +146,16 @@ const ChatContainer = ({ setShowMobileChat }) => {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Add ESC key close for modal
+  useEffect(() => {
+    if (!mediaPreview) return;
+    const handler = (e) => {
+      if (e.key === 'Escape') setMediaPreview(null);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [mediaPreview]);
 
   if (isMessagesLoading) {
     return (
@@ -314,16 +325,29 @@ const ChatContainer = ({ setShowMobileChat }) => {
                         <img
                           src={message.image}
                           alt="Attachment"
-                          className='sm:max-w-[200px] rounded-md mb-2'
+                          className='sm:max-w-[200px] rounded-md mb-2 cursor-pointer'
+                          onClick={() => setMediaPreview({ type: 'image', url: message.image })}
                         />
                       )}
                       {message.video && (
-                        <video
-                          src={message.video}
-                          controls
-                          className='sm:max-w-[200px] max-h-48 rounded-md mb-2'
-                          style={{ background: '#000' }}
-                        />
+                        <div
+                          className='sm:max-w-[200px] max-h-48 rounded-md mb-2 cursor-pointer bg-black flex items-center justify-center relative overflow-hidden'
+                          style={{ aspectRatio: '16/9' }}
+                          onClick={() => setMediaPreview({ type: 'video', url: message.video })}
+                        >
+                          <video
+                            src={message.video}
+                            className='w-full h-full object-contain pointer-events-none select-none'
+                            style={{ background: '#000' }}
+                            tabIndex={-1}
+                            preload='metadata'
+                            muted
+                            playsInline
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center text-white text-4xl opacity-80 pointer-events-none">
+                            ▶
+                          </span>
+                        </div>
                       )}
                       {editingId === message._id && !isDeleted ? (
                         <form
@@ -461,6 +485,27 @@ const ChatContainer = ({ setShowMobileChat }) => {
         </div>
         <MessageInput />
       </div>
+      {/* Media Preview Modal */}
+      {mediaPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setMediaPreview(null)}>
+          <div className="relative max-w-full max-h-full w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            <button className="absolute top-2 right-2 z-10 bg-base-200 rounded-full p-1" onClick={() => setMediaPreview(null)}>
+              <span style={{ fontSize: 24, fontWeight: 'bold' }}>×</span>
+            </button>
+            {mediaPreview.type === 'image' ? (
+              <img src={mediaPreview.url} alt="Preview" className="max-w-[90vw] max-h-[80vh] w-auto h-auto rounded-lg shadow-lg object-contain" />
+            ) : (
+              <video
+                src={mediaPreview.url}
+                controls
+                autoPlay
+                className="w-[96vw] max-w-[480px] sm:max-w-[90vw] max-h-[80vh] h-auto rounded-lg shadow-lg bg-black object-contain"
+                style={{ background: '#000' }}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };
