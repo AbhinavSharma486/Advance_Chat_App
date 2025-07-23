@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import ChatHeader from './ChatHeader';
@@ -27,6 +27,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const chatAreaRef = useRef(null);
+  const lastScrolledUserId = useRef(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [swipeStates, setSwipeStates] = useState({}); // { [msgId]: { x, active } }
   const [mediaPreview, setMediaPreview] = useState(null); // { type, url }
@@ -106,10 +107,39 @@ const ChatContainer = ({ setShowMobileChat }) => {
     }
   }, [selectedUser, messages, currentUser, dispatch]);
 
-
+  // WhatsApp-style: Always jump to last message when messages are loaded (robust MutationObserver version)
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typingBubble]);
+    if (
+      !isMessagesLoading &&
+      selectedUser?._id &&
+      messages.length > 0 &&
+      chatAreaRef.current
+    ) {
+      const chatArea = chatAreaRef.current;
+      const scrollToBottom = () => {
+        chatArea.scrollTop = chatArea.scrollHeight;
+      };
+      // If already at bottom, scroll immediately
+      if (chatArea.scrollHeight > 0) {
+        scrollToBottom();
+      } else {
+        // Otherwise, observe for DOM changes
+        const observer = new MutationObserver(() => {
+          scrollToBottom();
+          observer.disconnect();
+        });
+        observer.observe(chatArea, { childList: true, subtree: true });
+        // Clean up
+        return () => observer.disconnect();
+      }
+    }
+  }, [isMessagesLoading, selectedUser?._id, messages.length]);
+  // (Optional) Smooth scroll for new messages in same chat
+  // useEffect(() => {
+  //   if (!isMessagesLoading && selectedUser?._id && lastScrolledUserId.current === selectedUser._id) {
+  //     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  //   }
+  // }, [messages, typingBubble]);
 
   // Scroll event handler for chat area
   useEffect(() => {
