@@ -44,19 +44,41 @@ export const getMessages = async (req, res) => {
 };
 
 export const sendMessage = async (req, res) => {
-
   try {
-    const { text, image, replyTo } = req.body;
-
+    const { text, image, video, replyTo } = req.body;
     const { id: receiverId } = req.params;
-
     const senderId = req.user.id;
 
-    let imageUrl;
+    let imageUrl, videoUrl;
+    // Validate and upload image
     if (image) {
-      // upload base64 image to cloudinary
+      // Check base64 header for type and size
+      const matches = image.match(/^data:(image\/(png|jpeg|jpg|gif|webp));base64,(.+)$/);
+      if (!matches) {
+        return res.status(400).json({ message: 'Invalid image format' });
+      }
+      // Estimate size in bytes
+      const sizeInBytes = Math.ceil((matches[3].length * 3) / 4);
+      if (sizeInBytes > 5 * 1024 * 1024) {
+        return res.status(400).json({ message: 'Image size must be less than 5MB' });
+      }
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
+    }
+    // Validate and upload video
+    if (video) {
+      // Check base64 header for type and size
+      const matches = video.match(/^data:(video\/(mp4|webm|ogg));base64,(.+)$/);
+      if (!matches) {
+        return res.status(400).json({ message: 'Invalid video format' });
+      }
+      // Estimate size in bytes
+      const sizeInBytes = Math.ceil((matches[3].length * 3) / 4);
+      if (sizeInBytes > 5 * 1024 * 1024) {
+        return res.status(400).json({ message: 'Video size must be less than 5MB' });
+      }
+      const uploadResponse = await cloudinary.uploader.upload(video, { resource_type: 'video' });
+      videoUrl = uploadResponse.secure_url;
     }
 
     const newMessage = await Message({
@@ -64,27 +86,26 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
+      video: videoUrl,
       replyTo: replyTo || null,
     });
 
     await newMessage.save();
 
     await newMessage.populate([
-      { path: 'replyTo', select: 'text image senderId', populate: { path: 'senderId', select: 'fullName _id' } }
+      { path: 'replyTo', select: 'text image video senderId', populate: { path: 'senderId', select: 'fullName _id' } }
     ]);
 
     // realtime functionality goes here -> socket.io
     const receiverSocketIds = getReceiverSocketId(receiverId);
     if (receiverSocketIds) {
       const socketIdsArray = Array.isArray(receiverSocketIds) ? receiverSocketIds : [receiverSocketIds];
-
       socketIdsArray.forEach(socketId => {
         io.to(socketId).emit("newMessage", newMessage);
       });
     }
 
     res.status(200).json(newMessage);
-
   } catch (error) {
     console.log("Error in sendMessage controller", error.message);
     res.status(500).json({ message: "Internal server error" });

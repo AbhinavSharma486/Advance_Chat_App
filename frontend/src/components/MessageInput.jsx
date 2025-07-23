@@ -13,7 +13,7 @@ const MessageInput = () => {
   const [typingTimeout, setTypingTimeout] = useState(null);
 
   const [text, setText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null); // { type, url }
   const fileInputRef = useRef(null);
 
   // Cleanup: send stopTyping when unmounting or switching user
@@ -25,23 +25,29 @@ const MessageInput = () => {
     };
   }, [selectedUser, dispatch]);
 
-  const handleImageChange = (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+    if (!file) return;
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    if (!isImage && !isVideo) {
+      toast.error('Please select an image or video file');
       return;
     }
-
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result);
+      setMediaPreview({ type: isImage ? 'image' : 'video', url: reader.result });
     };
     reader.readAsDataURL(file);
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const removeMedia = () => {
+    setMediaPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleTyping = (e) => {
@@ -59,18 +65,19 @@ const MessageInput = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
-    if (!text.trim() && !imagePreview) return;
+    if (!text.trim() && !mediaPreview) return;
 
     try {
       dispatch(sendMessage({
         text: text.trim(),
-        image: imagePreview,
+        image: mediaPreview?.type === 'image' ? mediaPreview.url : undefined,
+        video: mediaPreview?.type === 'video' ? mediaPreview.url : undefined,
         replyTo: reply?._id || null,
       }));
 
       // clear form
       setText("");
-      setImagePreview(null);
+      setMediaPreview(null);
 
       if (fileInputRef.current) fileInputRef.current.value = "";
       dispatch(clearReply());
@@ -94,26 +101,32 @@ const MessageInput = () => {
           <button className="btn btn-xs btn-ghost ml-2" onClick={() => dispatch(clearReply())}><X size={16} /></button>
         </div>
       )}
-      {
-        imagePreview && (
-          <div className='mb-3 flex items-center gap-2'>
-            <div className="relative">
+      {mediaPreview && (
+        <div className='mb-3 flex items-center gap-2'>
+          <div className="relative">
+            {mediaPreview.type === 'image' ? (
               <img
-                src={imagePreview}
+                src={mediaPreview.url}
                 alt="Preview"
                 className='w-20 h-20 object-cover rounded-lg border border-zinc-700'
               />
-              <button
-                onClick={removeImage}
-                className='absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center'
-                type='button'
-              >
-                <X size={13} />
-              </button>
-            </div>
+            ) : (
+              <video
+                src={mediaPreview.url}
+                controls
+                className='w-28 h-20 object-cover rounded-lg border border-zinc-700'
+              />
+            )}
+            <button
+              onClick={removeMedia}
+              className='absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center'
+              type='button'
+            >
+              <X size={13} />
+            </button>
           </div>
-        )
-      }
+        </div>
+      )}
 
       <form onSubmit={handleSendMessage} className='flex items-center gap-2'>
         <div className="flex-1 flex gap-2">
@@ -127,16 +140,16 @@ const MessageInput = () => {
 
           <input
             type='file'
-            accept='image/*'
+            accept='image/*,video/*'
             className='hidden'
             ref={fileInputRef}
-            onChange={handleImageChange}
+            onChange={handleFileChange}
           />
 
           <button
             type='button'
             className={`hidden sm:flex btn btn-circle btn-sm
-              ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+              ${mediaPreview ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
@@ -145,8 +158,8 @@ const MessageInput = () => {
 
         <button
           type='submit'
-          className={`btn btn-sm btn-circle ${(!text.trim() && !imagePreview) ? "opacity-50 cursor-not-allowed" : ""}`}
-          disabled={!text.trim() && !imagePreview}
+          className={`btn btn-sm btn-circle ${(!text.trim() && !mediaPreview) ? "opacity-50 cursor-not-allowed" : ""}`}
+          disabled={!text.trim() && !mediaPreview}
         >
           <Send size={22} />
         </button>

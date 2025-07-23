@@ -317,6 +317,14 @@ const ChatContainer = ({ setShowMobileChat }) => {
                           className='sm:max-w-[200px] rounded-md mb-2'
                         />
                       )}
+                      {message.video && (
+                        <video
+                          src={message.video}
+                          controls
+                          className='sm:max-w-[200px] max-h-48 rounded-md mb-2'
+                          style={{ background: '#000' }}
+                        />
+                      )}
                       {editingId === message._id && !isDeleted ? (
                         <form
                           onSubmit={e => {

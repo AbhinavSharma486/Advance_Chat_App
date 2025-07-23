@@ -18,6 +18,9 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    video: {
+      type: String,
+    },
     reactions: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
