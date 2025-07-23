@@ -28,6 +28,38 @@ const ChatContainer = ({ setShowMobileChat }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const chatAreaRef = useRef(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
+  const [swipeStates, setSwipeStates] = useState({}); // { [msgId]: { x, active } }
+
+  // Touch event handlers for swipe-to-reply
+  const touchData = useRef({}); // { [msgId]: { startX, lastX, swiping } }
+
+  const handleTouchStart = (msgId, e) => {
+    if (window.innerWidth < 320 || window.innerWidth > 767) return;
+    const touch = e.touches[0];
+    touchData.current[msgId] = { startX: touch.clientX, lastX: touch.clientX, swiping: true };
+    setSwipeStates(s => ({ ...s, [msgId]: { x: 0, active: false } }));
+  };
+
+  const handleTouchMove = (msgId, e) => {
+    if (window.innerWidth < 320 || window.innerWidth > 767) return;
+    if (!touchData.current[msgId]?.swiping) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchData.current[msgId].startX;
+    if (deltaX > 0) {
+      setSwipeStates(s => ({ ...s, [msgId]: { x: Math.min(deltaX, 80), active: deltaX > 40 } }));
+    }
+    touchData.current[msgId].lastX = touch.clientX;
+  };
+
+  const handleTouchEnd = (msgId, message) => {
+    if (window.innerWidth < 320 || window.innerWidth > 767) return;
+    const state = swipeStates[msgId];
+    if (state?.active) {
+      dispatch(setReply(message));
+    }
+    setSwipeStates(s => ({ ...s, [msgId]: { x: 0, active: false } }));
+    touchData.current[msgId] = null;
+  };
 
   // Close emoji picker/dropdown on click outside
   useEffect(() => {
@@ -233,6 +265,14 @@ const ChatContainer = ({ setShowMobileChat }) => {
                       setPickerPos({ x: e.clientX, y: e.clientY });
                     }}
                     onMouseLeave={() => setShowReactions(r => ({ ...r, [message._id]: false }))}
+                    onTouchStart={e => handleTouchStart(message._id, e)}
+                    onTouchMove={e => handleTouchMove(message._id, e)}
+                    onTouchEnd={() => handleTouchEnd(message._id, message)}
+                    style={
+                      window.innerWidth >= 320 && window.innerWidth <= 767 && swipeStates[message._id]?.x
+                        ? { transform: `translateX(${swipeStates[message._id].x}px)`, transition: swipeStates[message._id].active ? 'transform 0.2s' : undefined }
+                        : undefined
+                    }
                     {...(isFirstOfDate ? { 'data-datekey': group.dateKey } : {})}
                   >
                     <div className="chat-image avatar">
@@ -262,6 +302,12 @@ const ChatContainer = ({ setShowMobileChat }) => {
                     </div>
 
                     <div className={`chat-bubble flex flex-col relative group transition-colors duration-300 ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content'}`}>
+                      {/* Swipe-to-reply icon feedback */}
+                      {window.innerWidth >= 320 && window.innerWidth <= 767 && swipeStates[message._id]?.x > 20 && !isOwn && (
+                        <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-primary text-2xl transition-opacity duration-200 opacity-80">
+                          ↩️
+                        </span>
+                      )}
                       {message.image && (
                         <img
                           src={message.image}
