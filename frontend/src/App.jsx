@@ -18,6 +18,7 @@ import ProfilePage from './pages/ProfilePage';
 import { subscribeToMessages, unsubscribeFromMessages } from "./redux/message/chatSlice";
 import { connectSocketThunk } from "./redux/user/userSlice";
 import UserProfilePreview from './components/UserProfilePreview';
+import { FONT_SIZE_MAP } from "./components/Navbar";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ const App = () => {
   const { currentUser, isCheckingAuth, onlineUsers, socket } = useSelector((state) => state.user);
 
   const theme = useSelector((state) => state.theme.theme);
+  const font = useSelector((state) => state.theme.font);
 
   useEffect(() => {
     dispatch(checkAuth());
@@ -58,8 +60,9 @@ const App = () => {
     );
   }
 
+  const fontSize = FONT_SIZE_MAP[font] || 'text-base';
   return (
-    <div>
+    <div className={`${font} ${fontSize}`}>
       <Navbar />
       <Routes>
         <Route path='/' element={currentUser ? <HomePage /> : <Navigate to="/login" />} />
