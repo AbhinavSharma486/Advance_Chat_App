@@ -79,7 +79,7 @@ const Sidebar = ({ setShowMobileChat }) => {
   }
 
   return (
-    <aside className="h-full w-full sm:w-64 md:w-52 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200 flex-shrink-0">
+    <aside className="h-full w-full sm:w-64 md:w-48 md:min-w-[160px] md:shrink-0 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
       <div className="border-b border-base-300 w-full p-5">
 
         <div className="flex items-center gap-2">

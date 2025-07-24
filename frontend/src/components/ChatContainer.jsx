@@ -25,6 +25,8 @@ const ChatContainer = ({ setShowMobileChat }) => {
   const [pickerFor, setPickerFor] = useState(null);
   const [pickerPos, setPickerPos] = useState({ x: 0, y: 0 });
   const pickerRef = useRef();
+  // For responsive context menu positioning
+  const [pickerAdjustedPos, setPickerAdjustedPos] = useState({ x: 0, y: 0 });
   const theme = useSelector((state) => state.theme.theme);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -76,6 +78,34 @@ const ChatContainer = ({ setShowMobileChat }) => {
     if (pickerFor) document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [pickerFor]);
+
+  // Adjust context menu position so it never overflows the viewport
+  useLayoutEffect(() => {
+    if (!pickerFor || !pickerRef.current) return;
+    const menu = pickerRef.current;
+    const { innerWidth, innerHeight } = window;
+    const rect = menu.getBoundingClientRect();
+    let x = pickerPos.x;
+    let y = pickerPos.y;
+    // If menu overflows right, shift left
+    if (x + rect.width > innerWidth - 8) x = innerWidth - rect.width - 8;
+    // If menu overflows left, shift right
+    if (x < 8) x = 8;
+    // If menu overflows bottom, try to open above the click/touch point
+    if (y + rect.height > innerHeight - 8) {
+      // Try to open above
+      const aboveY = y - rect.height;
+      if (aboveY >= 8) {
+        y = aboveY;
+      } else {
+        // If still overflows top, clamp to 8
+        y = 8;
+      }
+    }
+    // If menu overflows top, shift down
+    if (y < 8) y = 8;
+    setPickerAdjustedPos({ x, y });
+  }, [pickerFor, pickerPos]);
 
 
   useEffect(() => {
@@ -295,7 +325,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
         </div>
       )}
       {/* Remove any absolute debug box */}
-      <div className='flex-1 flex flex-col min-h-0'>
+      <div className='flex-1 flex flex-col min-h-0 w-full md:px-6 lg:px-12 md:max-w-none lg:max-w-4xl mx-auto md:min-w-0 flex-1 max-w-full overflow-x-hidden'>
         {/* Mobile back button */}
         {setShowMobileChat && (
           <div className="md:hidden flex items-center p-2 border-b border-base-300 bg-base-100">
@@ -311,7 +341,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
         <ChatHeader onOpenDatePicker={handleOpenDatePicker} onDeleteChat={handleDeleteChat} />
         {/* Scrollable chat area: messages + typing bubble + scroll ref */}
         <div
-          className="flex-1 overflow-y-auto xxs:p-2 xs:p-2 p-4 xxs:space-y-2 xs:space-y-3 space-y-4 xxs:pb-2 xs:pb-3 pb-4 bg-base-100 transition-colors duration-300 min-h-0"
+          className="flex-1 overflow-y-auto overflow-x-hidden max-w-full xxs:p-2 xs:p-2 p-4 xxs:space-y-2 xs:space-y-3 space-y-4 xxs:pb-2 xs:pb-3 pb-4 bg-base-100 transition-colors duration-300 min-h-0"
           ref={chatAreaRef}
           style={{ position: 'relative' }}
         >
@@ -514,14 +544,27 @@ const ChatContainer = ({ setShowMobileChat }) => {
                       {pickerFor === message._id && (
                         <div
                           ref={pickerRef}
-                          className="fixed z-30 bg-base-200 border rounded-lg shadow p-2 animate-fade-in"
-                          style={{ left: pickerPos.x, top: pickerPos.y, minWidth: 120 }}
+                          className={
+                            `fixed z-30 bg-base-200 border rounded-lg shadow animate-fade-in ` +
+                            (window.innerWidth <= 420
+                              ? 'p-1 xxs:w-[90vw] xs:w-[90vw] w-[90vw] max-w-[220px] text-xs'
+                              : 'p-2 w-auto max-w-xs text-base')
+                          }
+                          style={{
+                            left: pickerAdjustedPos.x,
+                            top: pickerAdjustedPos.y,
+                            minWidth: 100,
+                            maxWidth: window.innerWidth <= 420 ? 220 : 320,
+                            width: window.innerWidth <= 420 ? '90vw' : undefined,
+                          }}
                         >
-                          <div className="flex gap-1 mb-1 justify-center">
+                          <div className={window.innerWidth <= 420 ? 'flex gap-0.5 mb-1 justify-center' : 'flex gap-1 mb-1 justify-center'}>
                             {REACTION_EMOJIS.map(emoji => (
                               <button
                                 key={emoji}
-                                className="text-base px-1.5 py-0.5 bg-transparent border-none shadow-none hover:bg-primary/10 rounded"
+                                className={window.innerWidth <= 420
+                                  ? 'text-base px-1 py-0.5 bg-transparent border-none shadow-none hover:bg-primary/10 rounded'
+                                  : 'text-base px-1.5 py-0.5 bg-transparent border-none shadow-none hover:bg-primary/10 rounded'}
                                 onClick={() => {
                                   dispatch(reactToMessage(message._id, emoji));
                                   setPickerFor(null);
@@ -530,7 +573,9 @@ const ChatContainer = ({ setShowMobileChat }) => {
                             ))}
                           </div>
                           <button
-                            className="w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1 text-base-content"
+                            className={window.innerWidth <= 420
+                              ? 'w-full text-left px-1 py-0.5 hover:bg-base-300 rounded mb-1 text-base-content text-xs'
+                              : 'w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1 text-base-content'}
                             onClick={() => {
                               dispatch(setReply(message));
                               setPickerFor(null);
@@ -538,7 +583,9 @@ const ChatContainer = ({ setShowMobileChat }) => {
                           >Reply</button>
                           {isOwn && !isDeleted && (
                             <button
-                              className="w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1 text-base-content"
+                              className={window.innerWidth <= 420
+                                ? 'w-full text-left px-1 py-0.5 hover:bg-base-300 rounded mb-1 text-base-content text-xs'
+                                : 'w-full text-left px-2 py-1 hover:bg-base-300 rounded mb-1 text-base-content'}
                               onClick={() => {
                                 setEditingId(message._id);
                                 setEditText(message.text);
@@ -548,7 +595,9 @@ const ChatContainer = ({ setShowMobileChat }) => {
                           )}
                           {isOwn && !isDeleted && (
                             <button
-                              className="w-full text-left text-red-500 px-2 py-1 hover:bg-red-100 rounded mt-1"
+                              className={window.innerWidth <= 420
+                                ? 'w-full text-left text-red-500 px-1 py-0.5 hover:bg-red-100 rounded mt-1 text-xs'
+                                : 'w-full text-left text-red-500 px-2 py-1 hover:bg-red-100 rounded mt-1'}
                               onClick={() => {
                                 dispatch(deleteMessage(message._id));
                                 setPickerFor(null);
