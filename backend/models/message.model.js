@@ -43,6 +43,10 @@ const messageSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       red: "User"
     }],
+    deletedFor: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
     seenAt: { type: Date }
   }, { timestamps: true }
 );

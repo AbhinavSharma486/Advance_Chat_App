@@ -30,7 +30,8 @@ export const getMessages = async (req, res) => {
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId }
-      ]
+      ],
+      deletedFor: { $ne: myId }
     }).populate([
       { path: 'replyTo', select: 'text image senderId', populate: { path: 'senderId', select: 'fullName _id' } }
     ]);
@@ -294,6 +295,31 @@ export const getLastMessagesForSidebar = async (req, res) => {
     res.status(200).json(results);
   } catch (error) {
     console.log('Error in getLastMessagesForSidebar', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Clear chat for a user (delete all messages in a chat for the sender only)
+export const clearChatForUser = async (req, res) => {
+  try {
+    const { chatId } = req.params; // chatId is the other user's id
+    const userId = req.user.id;
+
+    // Find all messages between userId and chatId
+    const result = await Message.updateMany(
+      {
+        $or: [
+          { senderId: userId, receiverId: chatId },
+          { senderId: chatId, receiverId: userId }
+        ],
+        deletedFor: { $ne: userId }
+      },
+      { $addToSet: { deletedFor: userId } }
+    );
+
+    res.status(200).json({ message: 'Chat cleared for user', modifiedCount: result.modifiedCount });
+  } catch (error) {
+    console.log('Error in clearChatForUser controller', error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
