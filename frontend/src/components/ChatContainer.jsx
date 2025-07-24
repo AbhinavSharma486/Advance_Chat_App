@@ -233,7 +233,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
       {/* Delete Chat Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="relative bg-base-100 rounded-xl shadow-lg p-6 w-full max-w-sm flex flex-col items-center">
+          <div className="relative bg-base-100 border border-base-300 rounded-xl shadow-lg p-6 w-full max-w-sm flex flex-col items-center text-base-content">
             <button
               className="absolute top-3 right-3 text-base-content/60 hover:text-base-content btn btn-ghost btn-circle"
               onClick={() => setShowDeleteModal(false)}
@@ -252,7 +252,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
                 Cancel
               </button>
               <button
-                className="btn btn-error flex-1 text-white"
+                className="flex-1 text-white bg-red-600 hover:bg-red-700 border-none btn rounded-lg"
                 onClick={confirmDeleteChat}
               >
                 Delete Chat
