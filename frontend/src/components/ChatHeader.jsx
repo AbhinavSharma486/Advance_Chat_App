@@ -77,7 +77,7 @@ const ChatHeader = ({ onOpenDatePicker, onDeleteChat }) => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 relative">
+        <div className="flex items-center gap-0 sm:gap-2 relative">
           {/* Calendar button */}
           <button onClick={onOpenDatePicker} title="Jump to date" className="btn btn-ghost btn-sm">
             <Calendar className="size-5" />

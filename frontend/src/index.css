@@ -3,3 +3,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom DatePicker theme support */
+.custom-datepicker-theme.react-datepicker {
+  background-color: var(--fallback-b1, #fff) !important;
+  color: var(--fallback-bc, #222) !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid var(--fallback-b2, #e5e7eb) !important;
+  box-shadow: 0 4px 24px 0 rgb(0 0 0 / 0.10);
+}
+
+.custom-datepicker-theme .react-datepicker__header {
+  background-color: var(--fallback-b2, #f3f4f6) !important;
+  border-bottom: 1px solid var(--fallback-b3, #e5e7eb) !important;
+}
+
+.custom-datepicker-theme .react-datepicker__day,
+.custom-datepicker-theme .react-datepicker__day-name {
+  color: var(--fallback-bc, #222) !important;
+}
+
+.custom-datepicker-theme .react-datepicker__day--selected,
+.custom-datepicker-theme .react-datepicker__day--keyboard-selected {
+  background-color: var(--fallback-p, #2563eb) !important;
+  color: var(--fallback-pc, #fff) !important;
+}
+
+.custom-datepicker-theme .react-datepicker__day--today {
+  border-radius: 0.375rem;
+  border: 1.5px solid var(--fallback-p, #2563eb) !important;
+}
+
+.custom-datepicker-theme .react-datepicker__day:hover {
+  background-color: var(--fallback-p, #2563eb) !important;
+  color: var(--fallback-pc, #fff) !important;
+}

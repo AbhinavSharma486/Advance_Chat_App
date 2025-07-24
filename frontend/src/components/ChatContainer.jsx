@@ -265,16 +265,25 @@ const ChatContainer = ({ setShowMobileChat }) => {
       )}
       {/* Date Picker Modal */}
       {showDatePicker && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
-          <div className="bg-base-100 p-4 rounded-lg shadow-lg relative">
-            <button className="absolute top-2 right-2 btn btn-xs btn-circle" onClick={handleCloseDatePicker}>✕</button>
-            <DatePicker
-              inline
-              selected={selectedDate}
-              onChange={handleDateSelect}
-              maxDate={new Date()}
-              calendarClassName="!bg-base-100"
-            />
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-2" data-theme={theme}>
+          <div className="bg-base-100 p-2 sm:p-4 rounded-lg shadow-lg relative w-full max-w-xs sm:max-w-sm">
+            <button
+              className="absolute top-2 right-2 btn btn-sm btn-circle sm:btn-xs"
+              style={{ zIndex: 10 }}
+              onClick={handleCloseDatePicker}
+              aria-label="Close calendar"
+            >
+              ✕
+            </button>
+            <div className="flex justify-center">
+              <DatePicker
+                inline
+                selected={selectedDate}
+                onChange={handleDateSelect}
+                maxDate={new Date()}
+                calendarClassName="!bg-base-100 custom-datepicker-theme"
+              />
+            </div>
           </div>
         </div>
       )}
