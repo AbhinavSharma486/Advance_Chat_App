@@ -1,18 +1,38 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { X, Calendar } from 'lucide-react';
+import { X, Calendar, MoreVertical } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 import { setSelectedUser } from '../redux/message/chatSlice';
 import { getAvatarUrl } from '../lib/util';
 
 
-const ChatHeader = ({ onOpenDatePicker }) => {
+const ChatHeader = ({ onOpenDatePicker, onDeleteChat }) => {
   const dispatch = useDispatch();
 
   const { selectedUser, typingUsers = {} } = useSelector((state) => state.chat);
   const onlineUsers = useSelector((state) => state.user?.onlineUsers) || [];
   // Map for quick lookup
   const onlineUserMap = Object.fromEntries(onlineUsers.map(u => [u.userId, u.onlineAt]));
+
+  // Dropdown state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef();
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <div className='p-2.5 border-b border-base-300'>
@@ -57,11 +77,30 @@ const ChatHeader = ({ onOpenDatePicker }) => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           {/* Calendar button */}
           <button onClick={onOpenDatePicker} title="Jump to date" className="btn btn-ghost btn-sm">
             <Calendar className="size-5" />
           </button>
+          {/* Three-dot menu */}
+          <div ref={menuRef} className="relative">
+            <button onClick={() => setMenuOpen((v) => !v)} title="More options" className="btn btn-ghost btn-sm">
+              <MoreVertical className="size-5" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-base-100 border border-base-200 rounded shadow-lg z-50">
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-base-200 text-red-600"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    if (onDeleteChat) onDeleteChat();
+                  }}
+                >
+                  Delete Chat
+                </button>
+              </div>
+            )}
+          </div>
           {/* Close button */}
           <button onClick={() => dispatch(setSelectedUser(null))}>
             <X />

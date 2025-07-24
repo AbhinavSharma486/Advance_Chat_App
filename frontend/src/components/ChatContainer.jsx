@@ -4,11 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import ChatHeader from './ChatHeader';
 import MessageInput from "./MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
-import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply, markMessagesAsSeen } from '../redux/message/chatSlice';
+import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply, markMessagesAsSeen, setSelectedUser } from '../redux/message/chatSlice';
 import { formatMessageTime, REACTION_EMOJIS, groupMessagesByDate, getAvatarUrl } from '../lib/util.js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ChevronDown, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { axiosInstance } from '../lib/axios.js';
+import toast from 'react-hot-toast';
 
 
 const ChatContainer = ({ setShowMobileChat }) => {
@@ -31,6 +33,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [swipeStates, setSwipeStates] = useState({}); // { [msgId]: { x, active } }
   const [mediaPreview, setMediaPreview] = useState(null); // { type, url }
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Touch event handlers for swipe-to-reply
   const touchData = useRef({}); // { [msgId]: { startX, lastX, swiping } }
@@ -187,6 +190,22 @@ const ChatContainer = ({ setShowMobileChat }) => {
     return () => window.removeEventListener('keydown', handler);
   }, [mediaPreview]);
 
+  // Clear chat handler
+  const handleDeleteChat = () => {
+    setShowDeleteModal(true);
+  };
+  const confirmDeleteChat = async () => {
+    if (!selectedUser?._id) return;
+    try {
+      await axiosInstance.delete(`/messages/clear/${selectedUser._id}`);
+      toast.success('Chat cleared!');
+      setShowDeleteModal(false);
+      dispatch(setSelectedUser(null));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to clear chat');
+    }
+  };
+
   if (isMessagesLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-auto">
@@ -211,6 +230,37 @@ const ChatContainer = ({ setShowMobileChat }) => {
 
   return (
     <>
+      {/* Delete Chat Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="relative bg-base-100 rounded-xl shadow-lg p-6 w-full max-w-sm flex flex-col items-center">
+            <button
+              className="absolute top-3 right-3 text-base-content/60 hover:text-base-content btn btn-ghost btn-circle"
+              onClick={() => setShowDeleteModal(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <AlertTriangle className="w-12 h-12 text-warning mb-2" />
+            <h2 className="text-lg font-semibold mb-2 text-center">Delete Chat?</h2>
+            <p className="text-base-content/70 text-center mb-4">Are you sure you want to delete this chat? This will clear all messages for you. This action cannot be undone.</p>
+            <div className="flex gap-3 w-full mt-2">
+              <button
+                className="btn btn-ghost flex-1"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error flex-1 text-white"
+                onClick={confirmDeleteChat}
+              >
+                Delete Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Date Picker Modal */}
       {showDatePicker && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
@@ -240,7 +290,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
             <span className="font-semibold">Back</span>
           </div>
         )}
-        <ChatHeader onOpenDatePicker={handleOpenDatePicker} />
+        <ChatHeader onOpenDatePicker={handleOpenDatePicker} onDeleteChat={handleDeleteChat} />
         {/* Scrollable chat area: messages + typing bubble + scroll ref */}
         <div
           className="flex-1 overflow-y-auto p-4 space-y-4 pb-4 bg-base-100 transition-colors duration-300"
