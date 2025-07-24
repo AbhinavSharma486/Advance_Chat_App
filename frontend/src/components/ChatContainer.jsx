@@ -311,7 +311,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
         <ChatHeader onOpenDatePicker={handleOpenDatePicker} onDeleteChat={handleDeleteChat} />
         {/* Scrollable chat area: messages + typing bubble + scroll ref */}
         <div
-          className="flex-1 overflow-y-auto p-4 space-y-4 pb-4 bg-base-100 transition-colors duration-300 min-h-0"
+          className="flex-1 overflow-y-auto xxs:p-2 xs:p-2 p-4 xxs:space-y-2 xs:space-y-3 space-y-4 xxs:pb-2 xs:pb-3 pb-4 bg-base-100 transition-colors duration-300 min-h-0"
           ref={chatAreaRef}
           style={{ position: 'relative' }}
         >
@@ -380,7 +380,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
                     {...(isFirstOfDate ? { 'data-datekey': group.dateKey } : {})}
                   >
                     <div className="chat-image avatar">
-                      <div className="size-10 rounded-full border">
+                      <div className="xxs:size-8 xs:size-9 size-10 rounded-full border">
                         <img
                           src={
                             isOwn
@@ -398,7 +398,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
                       {message.replyTo && (
                         <div className="mb-2 p-2 rounded-t bg-base-100 border-l-4 border-primary/80" style={{ marginLeft: '-0.5rem', marginRight: '-0.5rem' }}>
                           <div className="font-semibold text-primary text-xs mb-0.5">{message.replyTo.senderId?.fullName || 'User'}</div>
-                          <div className="text-xs text-zinc-500 italic truncate max-w-xs">
+                          <div className="xxs:text-[10px] xs:text-xs text-xs text-zinc-500 italic truncate xxs:max-w-[70vw] xs:max-w-[80vw] max-w-xs">
                             {message.replyTo.text || (message.replyTo.image ? '[Image]' : '')}
                           </div>
                         </div>
@@ -406,7 +406,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
                     </div>
 
                     <div
-                      className={`chat-bubble flex flex-col relative group transition-colors duration-300 ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content'}`}
+                      className={`chat-bubble flex flex-col relative group transition-colors duration-300 ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content'} xxs:max-w-[90vw] xs:max-w-[90vw] sm:max-w-[70%] max-w-[80%] xxs:text-xs xs:text-sm`}
                       onContextMenu={e => {
                         e.preventDefault();
                         setPickerFor(message._id);
@@ -423,13 +423,13 @@ const ChatContainer = ({ setShowMobileChat }) => {
                         <img
                           src={message.image}
                           alt="Attachment"
-                          className='sm:max-w-[200px] rounded-md mb-2 cursor-pointer'
+                          className='xxs:max-w-[80vw] xs:max-w-[80vw] sm:max-w-[200px] rounded-md mb-2 cursor-pointer'
                           onClick={() => setMediaPreview({ type: 'image', url: message.image })}
                         />
                       )}
                       {message.video && (
                         <div
-                          className='sm:max-w-[200px] max-h-48 rounded-md mb-2 cursor-pointer bg-black flex items-center justify-center relative overflow-hidden'
+                          className='xxs:max-w-[80vw] xs:max-w-[80vw] sm:max-w-[200px] max-h-48 rounded-md mb-2 cursor-pointer bg-black flex items-center justify-center relative overflow-hidden'
                           style={{ aspectRatio: '16/9' }}
                           onClick={() => setMediaPreview({ type: 'video', url: message.video })}
                         >

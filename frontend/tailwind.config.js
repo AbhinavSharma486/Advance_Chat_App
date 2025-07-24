@@ -34,6 +34,15 @@ export default {
         shadowsintolight: ['"Shadows Into Light"', 'cursive'],
       },
     },
+    screens: {
+      'xxs': '320px', // for very small devices
+      'xs': '375px',  // for iPhone SE, etc.
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
   },
   plugins: [daisyui],
   daisyui: {
