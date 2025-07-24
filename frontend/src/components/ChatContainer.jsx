@@ -174,10 +174,17 @@ const ChatContainer = ({ setShowMobileChat }) => {
     setShowDatePicker(false);
     // Scroll to the first message of this date
     const dateKey = date.toDateString();
-    const el = document.querySelector(`[data-datekey='${dateKey}']`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    setTimeout(() => {
+      if (chatAreaRef.current) {
+        const el = chatAreaRef.current.querySelector(`[data-datekey='${dateKey}']`);
+        if (el) {
+          chatAreaRef.current.scrollTo({
+            top: el.offsetTop - chatAreaRef.current.offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }, 100); // Wait for modal to close and DOM to update
   };
 
   // Add ESC key close for modal
