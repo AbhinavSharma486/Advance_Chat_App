@@ -14,6 +14,7 @@ const initialState = {
   typingUsers: {}, // { [userId]: true/false }
   typingBubble: null,
   sidebarLastMessages: {}, // { [userId]: lastMessage }
+  sidebarUnreadCounts: {}, // { [userId]: count }
 };
 
 // Reducers 
@@ -25,6 +26,10 @@ const chatSlice = createSlice({
       state.selectedUser = action.payload;
       state.messages = [];
       state.typingBubble = null; // Only clear typing bubble when switching chats
+      // Reset unread count for this user
+      if (action.payload && action.payload._id) {
+        state.sidebarUnreadCounts[action.payload._id] = 0;
+      }
     },
     addMessage: (state, action) => {
       state.messages.push(action.payload);
@@ -104,7 +109,18 @@ const chatSlice = createSlice({
     },
     removeTypingBubble: (state) => {
       state.typingBubble = null;
-    }
+    },
+    // --- Notification Feature ---
+    incrementUnreadCount: (state, action) => {
+      const userId = action.payload;
+      if (!state.sidebarUnreadCounts[userId]) state.sidebarUnreadCounts[userId] = 0;
+      state.sidebarUnreadCounts[userId] += 1;
+    },
+    resetUnreadCount: (state, action) => {
+      const userId = action.payload;
+      state.sidebarUnreadCounts[userId] = 0;
+    },
+    // --- End Notification Feature ---
   },
 
   extraReducers: (builder) => {
@@ -137,6 +153,10 @@ const chatSlice = createSlice({
           state.sidebarLastMessages[msg.senderId] = msg;
           state.sidebarLastMessages[msg.receiverId] = msg;
         }
+        // Increment unread count for the receiver if the chat is not open
+        if (msg.receiverId && state.selectedUser && msg.receiverId !== state.selectedUser._id) {
+          state.sidebarUnreadCounts[msg.receiverId] = (state.sidebarUnreadCounts[msg.receiverId] || 0) + 1;
+        }
       })
       .addCase(getLastMessagesForSidebar.fulfilled, (state, action) => {
         // action.payload: [{ userId, lastMessage }]
@@ -162,7 +182,11 @@ export const {
   clearTypingUser,
   updateMessagesSeen,
   addTypingBubble,
-  removeTypingBubble
+  removeTypingBubble,
+  // --- Notification Feature ---
+  incrementUnreadCount,
+  resetUnreadCount,
+  // --- End Notification Feature ---
 } = chatSlice.actions;
 
 
@@ -283,6 +307,14 @@ export const subscribeToMessages = () => (dispatch, getState) => {
     }
     // Always update sidebar last message for both users
     dispatch(updateSidebarLastMessage(newMessage));
+    // --- Notification Feature: increment unread if chat not open ---
+    if (
+      (!selectedUser || newMessage.senderId !== selectedUser._id) &&
+      newMessage.receiverId === currentUser._id
+    ) {
+      dispatch(incrementUnreadCount(newMessage.senderId));
+    }
+    // --- End Notification Feature ---
   };
 
   const reactionListner = (data) => {

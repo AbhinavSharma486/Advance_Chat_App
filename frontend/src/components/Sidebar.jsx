@@ -11,7 +11,7 @@ import { setSelectedUserForPreview } from '../redux/user/userSlice';
 const Sidebar = ({ setShowMobileChat }) => {
   const dispatch = useDispatch();
 
-  const { users, selectedUser, isUsersLoading, typingUsers = {}, sidebarLastMessages } = useSelector(
+  const { users, selectedUser, isUsersLoading, typingUsers = {}, sidebarLastMessages, sidebarUnreadCounts } = useSelector(
     (state) => state.chat,
     shallowEqual
   );
@@ -101,6 +101,7 @@ const Sidebar = ({ setShowMobileChat }) => {
           filteredUsers.map((user) => {
             // Use sidebarLastMessages for preview
             const lastMsg = sidebarLastMessages?.[String(user._id)] || null;
+            const unreadCount = sidebarUnreadCounts?.[String(user._id)] || 0;
             return (
               <button
                 key={user._id}
@@ -149,16 +150,21 @@ const Sidebar = ({ setShowMobileChat }) => {
                           </span>
                         </span>
                       ) : lastMsg ? (
-                        <span className="truncate max-w-[140px] block">{lastMsg.text || (lastMsg.image ? '📷 Photo' : 'Message')}</span>
+                        <span className={`truncate max-w-[140px] block ${unreadCount > 0 ? 'font-semibold text-primary' : ''}`}>{lastMsg.text || (lastMsg.image ? '📷 Photo' : 'Message')}</span>
                       ) : (
                         <span className="truncate max-w-[140px] block">No messages yet</span>
                       )}
                     </span>
                   </div>
-                  {/* Last message time */}
-                  {lastMsg && lastMsg.createdAt && (
-                    <span className="text-[11px] text-zinc-400 flex-shrink-0 ml-2 whitespace-nowrap">{formatLastMsgTime(lastMsg.createdAt)}</span>
-                  )}
+                  {/* Last message time and unread badge */}
+                  <div className="flex flex-col items-end ml-2 min-w-[28px]">
+                    {lastMsg && lastMsg.createdAt && (
+                      <span className="text-[11px] text-zinc-400 flex-shrink-0 whitespace-nowrap">{formatLastMsgTime(lastMsg.createdAt)}</span>
+                    )}
+                    {unreadCount > 0 && (
+                      <span className="mt-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold min-w-[20px] h-5 px-1.5 shadow">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    )}
+                  </div>
                 </div>
               </button>
             );
