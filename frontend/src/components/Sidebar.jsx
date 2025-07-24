@@ -24,6 +24,13 @@ const Sidebar = ({ setShowMobileChat }) => {
     // Remove getLastMessagesForSidebar from here, rely on real-time updates
   }, [dispatch]);
 
+  // Fetch sidebar last messages after users are loaded
+  useEffect(() => {
+    if (users.length > 0 && !isUsersLoading) {
+      dispatch(getLastMessagesForSidebar());
+    }
+  }, [users.length, isUsersLoading, dispatch]);
+
   // Map for quick lookup
   const onlineUserMap = Object.fromEntries(onlineUsers.map(u => [u.userId, u.onlineAt]));
   // Sort users: online at top (by onlineAt desc), then offline
