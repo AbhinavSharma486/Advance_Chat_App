@@ -128,11 +128,11 @@ const MessageInput = () => {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className='flex items-center gap-2'>
-        <div className="flex-1 flex gap-2">
+      <form onSubmit={handleSendMessage} className='flex items-center gap-2 flex-wrap sm:flex-nowrap'>
+        <div className="flex-1 flex gap-2 min-w-0">
           <input
             type="text"
-            className='w-full input input-bordered rounded-lg input-sm sm:input-md'
+            className='w-full input input-bordered rounded-lg input-sm sm:input-md min-w-0'
             placeholder='Type a message...'
             value={text}
             onChange={handleTyping}
@@ -148,9 +148,9 @@ const MessageInput = () => {
 
           <button
             type='button'
-            className={`hidden sm:flex btn btn-circle btn-sm
-              ${mediaPreview ? "text-emerald-500" : "text-zinc-400"}`}
+            className={`flex btn btn-circle btn-sm ${mediaPreview ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
+            aria-label="Upload image or video"
           >
             <Image size={20} />
           </button>
@@ -158,8 +158,9 @@ const MessageInput = () => {
 
         <button
           type='submit'
-          className={`btn btn-sm btn-circle ${(!text.trim() && !mediaPreview) ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`btn btn-sm btn-circle mt-2 sm:mt-0 ${(!text.trim() && !mediaPreview) ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!text.trim() && !mediaPreview}
+          aria-label="Send message"
         >
           <Send size={22} />
         </button>
