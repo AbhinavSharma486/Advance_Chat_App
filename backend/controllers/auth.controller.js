@@ -1,6 +1,5 @@
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
-import axios from "axios";
 
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
