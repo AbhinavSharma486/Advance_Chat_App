@@ -31,6 +31,16 @@ const chatSlice = createSlice({
     },
     updateSidebarLastMessage: (state, action) => {
       const msg = action.payload;
+      // If payload is null or has _id === '' or text === '' or createdAt === null, remove the last message for that user
+      if (!msg || msg._id === '' || msg.text === '' || msg.createdAt === null) {
+        if (msg && msg.receiverId) {
+          delete state.sidebarLastMessages[String(msg.receiverId)];
+        }
+        if (msg && msg.senderId) {
+          delete state.sidebarLastMessages[String(msg.senderId)];
+        }
+        return;
+      }
       if (msg.senderId) {
         state.sidebarLastMessages[String(msg.senderId)] = { ...(state.sidebarLastMessages[String(msg.senderId)] || {}), ...msg, _id: String(msg._id) };
       }

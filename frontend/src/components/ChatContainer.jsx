@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ChatHeader from './ChatHeader';
 import MessageInput from "./MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
-import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply, markMessagesAsSeen, setSelectedUser } from '../redux/message/chatSlice';
+import { getMessages, subscribeToMessages, unsubscribeFromMessages, reactToMessage, editMessage, deleteMessage, setReply, markMessagesAsSeen, setSelectedUser, updateSidebarLastMessage } from '../redux/message/chatSlice';
 import { formatMessageTime, REACTION_EMOJIS, groupMessagesByDate, getAvatarUrl } from '../lib/util.js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -200,6 +200,8 @@ const ChatContainer = ({ setShowMobileChat }) => {
       await axiosInstance.delete(`/messages/clear/${selectedUser._id}`);
       toast.success('Chat cleared!');
       setShowDeleteModal(false);
+      // Clear sidebar last message for this user
+      dispatch(updateSidebarLastMessage({ _id: '', senderId: currentUser._id, receiverId: selectedUser._id, text: '', createdAt: null }));
       dispatch(setSelectedUser(null));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to clear chat');
@@ -454,7 +456,7 @@ const ChatContainer = ({ setShowMobileChat }) => {
                             <span className={isDeleted ? "italic text-zinc-400" : ""} style={{ flex: '1 1 auto' }}>{message.text}</span>
                             {/* Time and ticks row, right-aligned at bottom */}
                             {(isOwn && !isDeleted) ? (
-                              <span className="flex items-center justify-end gap-1 text-xs opacity-50 mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
+                              <span className="flex items-center justify-end gap-1 text-xs mt-1 pr-1 select-none" style={{ minHeight: 18 }}>
                                 {/* (edited) label before time if edited */}
                                 {message.edited ? (
                                   <span className="whitespace-nowrap">edited&nbsp;{formatMessageTime(message.createdAt)}</span>
@@ -463,17 +465,17 @@ const ChatContainer = ({ setShowMobileChat }) => {
                                 )}
                                 {message.seen && message.seen.includes(selectedUser._id) ? (
                                   <>
-                                    <span title="Seen" className="text-blue-500 dark:text-blue-400" style={{ marginRight: -2 }}>✔</span>
-                                    <span title="Seen" className="text-blue-500 dark:text-blue-400 -ml-1">✔</span>
+                                    <span title="Seen" className="text-blue-600 dark:text-blue-400 font-bold" style={{ marginRight: -2 }}>✔</span>
+                                    <span title="Seen" className="text-blue-600 dark:text-blue-400 font-bold -ml-1">✔</span>
                                   </>
                                 ) : (
                                   message.seen && message.seen.length > 0 ? (
                                     <>
-                                      <span title="Delivered" className="text-zinc-400 dark:text-zinc-500" style={{ marginRight: -2 }}>✔</span>
-                                      <span title="Delivered" className="text-zinc-400 dark:text-zinc-500 -ml-1">✔</span>
+                                      <span title="Delivered" className="text-gray-500 dark:text-gray-400 font-bold" style={{ marginRight: -2 }}>✔</span>
+                                      <span title="Delivered" className="text-gray-500 dark:text-gray-400 font-bold -ml-1">✔</span>
                                     </>
                                   ) : (
-                                    <span title="Sent" className="text-zinc-400 dark:text-zinc-500">✔</span>
+                                    <span title="Sent" className="text-gray-400 dark:text-gray-500 font-bold">✔</span>
                                   )
                                 )}
                               </span>
