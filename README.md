@@ -4,9 +4,14 @@ A full-stack real-time chat application built with the MERN stack (MongoDB, Expr
 
 ---
 
+## 🚀 Live Demo
+
+- **Live Demo**: [https://chatify-4x1c.onrender.com/](https://chatify-4x1c.onrender.com/)
+
 ## Table of Contents
 
 - [Advanced Chat Web App](#advanced-chat-web-app)
+  - [🚀 Live Demo](#-live-demo)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Tech Stack](#tech-stack)
